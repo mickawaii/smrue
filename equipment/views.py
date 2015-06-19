@@ -78,3 +78,7 @@ class CreateView(CreateView):
 
 	def dispatch(self, *args, **kwargs):
 		return super(CreateView, self).dispatch(*args, **kwargs)
+
+class DeleteView(DeleteView):
+	model = Equipment
+	success_url = reverse_lazy("equipment:list")
