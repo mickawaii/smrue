@@ -1,3 +1,5 @@
 bower_components
 *.sublime-workspace
 *.sublime-project
+
+*.sqlite3
