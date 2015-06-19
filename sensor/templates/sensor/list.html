@@ -1,0 +1,28 @@
+{% extends "base_list.html" %}
+
+{% load static from staticfiles %}
+
+{% block js %}
+{% endblock %}
+
+{% block table_content %}
+<thead>
+	<tr>
+		<th>ID</th>
+		<th>Nome</th>
+		<th>Código</th>
+		<th>Equip. Associado</th>
+	</tr>
+</thead>
+
+<tbody>
+{% for item in sensors %}
+	<tr>
+		<td>{{item.pk}}</td>
+		<td>{{item.name}}</td>
+		<td>{{item.code}}</td>
+		<td>{{item.equipment.name}}</td>
+	</tr>
+{% endfor %}
+</tbody>
+{% endblock %}

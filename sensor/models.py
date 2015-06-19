@@ -11,7 +11,7 @@ class Sensor(models.Model):
 	updated_at = models.DateTimeField(auto_now=True)
 
 	def __unicode__(self):
-		return "%s - %s" % (self.code, self.name)
+		return "%s - %s" % (self.name, self.equipment.name)
 
 	class Meta:
 		app_label = 'smrue'

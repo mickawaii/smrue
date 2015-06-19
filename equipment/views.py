@@ -61,7 +61,7 @@ class CreateView(CreateView):
 		context['page_title'] = "Novo Equipamento"
 
 		context['form_title'] = "Novo Equipamento"
-		
+
 		context['editable'] = True
 
 		context['form_button'] = "Salvar"
