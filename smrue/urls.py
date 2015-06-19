@@ -13,4 +13,5 @@ urlpatterns = patterns('',
     # url(r'^goals/', include('goal.urls', namespace="goal"))
     url(r'^equipments/', include('equipment.urls', namespace="equipment")),
     url(r'^sensors/', include('sensor.urls', namespace="sensor")),
+    url(r'^goals/', include('goal.urls', namespace="goal")),
 )
