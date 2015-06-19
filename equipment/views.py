@@ -29,9 +29,9 @@ class IndexView(ListView):
 	def get_context_data(self, **kwargs):
 		context = super(IndexView, self).get_context_data(**kwargs)
 
-		context['page_title'] = 'Listagem de Equipamentos'
+		context['page_title'] = 'Equipamentos'
 
-		context['list_title'] = 'Listagem de Equipamentos'
+		context['list_title'] = 'Equipamentos'
 
 		context['create_link'] = reverse_lazy('equipment:create')
 
