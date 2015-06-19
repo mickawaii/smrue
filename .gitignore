@@ -1,0 +1,11 @@
+bower_components
+*.sublime-workspace
+*.sublime-project
+
+# DB files
+*.db
+*.sqlite3
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]

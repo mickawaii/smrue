@@ -41,6 +41,7 @@ INSTALLED_APPS = (
     'consumption',
     'goal',
     'sensor',
+    'aes_rate',
 )
 
 MIDDLEWARE_CLASSES = (
