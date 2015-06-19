@@ -35,7 +35,6 @@ class IndexView(ListView):
 
 		context['create_link'] = reverse_lazy('equipment:create')
 
-
 		return context
 
 	def get_queryset(self):

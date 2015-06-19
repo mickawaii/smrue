@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block css %}
+	<style type="text/css">
+		.home-button {
+			background: rgb(26, 205, 217);
+		  line-height: 100px;
+		  text-align: center;
+		  color: white;
+		  font-weight: normal;
+		  font-size: 24px;
+		}
+
+		.home-button:hover {
+			background: rgb(26, 158, 167);
+		  text-decoration: none;
+		  color: white;
+		}
+	</style>
+{% endblock %}
+
+{% block content %}
+	<div class="container">
+	  <div class="page-header">
+	    <h1>SMRUE</h1>
+	  </div>
+
+	  <div class="row">
+	    <div class="col-xs-6 col-md-3">
+	      <a href="#" class="thumbnail home-button">
+	        Equipamentos
+	      </a>
+	    </div>
+
+	    <div class="col-xs-6 col-md-3">
+	      <a href="#" class="thumbnail home-button">
+	        Metas
+	      </a>
+	    </div>
+
+	    <div class="col-xs-6 col-md-3">
+	      <a href="#" class="thumbnail home-button">
+	        Metas
+	      </a>
+	    </div>
+
+	    <div class="col-xs-6 col-md-3">
+	      <a href="#" class="thumbnail home-button">
+	        Metas
+	      </a>
+	    </div>
+	  </div>
+	</div>
+{% endblock %}
