@@ -1,54 +1,10 @@
 {% extends "base_form.html" %}
 {% load static from staticfiles %}
 
-{% block css %}
-{% static "bootstrap-daterangepicker/daterangepicker-bs3.css" as daterangepicker_css %}
-<link href="{{daterangepicker_css}}" rel="stylesheet">
-<style type="text/css">
-.form-group ul{
-	list-style-type: none;
-}
-ul.ui-autocomplete {
-	border: 1px solid #ccc;
-	list-style-type: none;
-	overflow-y: auto;
-	max-height: 200px;
-	padding-left: 0px;
-	font-size: inherit;
-	max-width: 300px;
-	background: #fff;
-	margin-bottom: 0px;
-	position: absolute;
-	z-index: 1;
-}
-
-.ui-autocomplete li {
-	padding-left: 12px;
-	line-height: 16px;
-}
-
-.ui-state-focus {
-	background: #1287EC;
-	color: white;
-}
-
-.ui-helper-hidden-accessible {
-	display: none;
-	max-height: 0px;
-	padding: 0px;
-}
-
-</style>
-{% endblock %}
-
 {% block js %}
 {% static "jquery-ui/jquery-ui.min.js" as jquery_ui %}
-{% static "bootstrap-daterangepicker/moment.min.js" as moment_js %}
-{% static "bootstrap-daterangepicker/daterangepicker.js" as daterangepicker_js %}
 {% static "jquery-mask/jquery.mask.min.js" as jquery_mask %}
 <script src="{{jquery_ui}}"></script>
-<script src="{{moment_js}}"></script>
-<script src="{{daterangepicker_js}}"></script>
 <script src="{{jquery_mask}}"></script>
 {% endblock %}
 
@@ -72,5 +28,11 @@ ul.ui-autocomplete {
 		<br/>
 	{% endfor %}
 
+{% endblock %}
+
+{% block js_bottom %}
+	<script type="text/javascript">
+		$('.js-money').mask('########.00', {reverse: true});
+	</script>
 {% endblock %}
 
