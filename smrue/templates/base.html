@@ -3,7 +3,7 @@
 {% static "bootstrap/css/bootstrap-theme.min.css" as bootstrap_theme_css %}
 {% static "css/application.css" as application_css %}
 {% static "bootstrap/js/bootstrap.min.js" as bootstrap_js %}
-{% static "jquery/jquery-1.11.1.min.js" as jquery_js %}
+{% static "jquery/jquery-1.9.1.min.js" as jquery_js %}
 {% static "images/fav.ico" as favicon_ico %}
 
 <!DOCTYPE html>
@@ -34,7 +34,7 @@
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" language="javascript" src="{{jquery_js}}"></script>
     <script type="text/javascript" language="javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     
     {% block js %}
