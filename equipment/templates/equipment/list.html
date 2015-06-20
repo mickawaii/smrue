@@ -28,6 +28,7 @@
 		<td>{{item.nominal_power}}</td>
 		<td class="text-center">
 			<button data-toggle="modal" data-target=".modal" class="delete-button" value="{% url 'equipment:delete' pk=item.pk %}">Remover</button>
+			<a class="btn btn-sm btn-default" title="Editar" href="{% url 'equipment:edit' pk=item.pk %}"><i class="glyphicon glyphicon-pencil"></i></a>
 		</td>
 	</tr>
 {% endfor %}

@@ -47,7 +47,7 @@ class IndexView(ListView):
 		return super(IndexView, self).dispatch(*args, **kwargs)
 
 class CreateView(CreateView):
-	template_name = 'equipment/create_form.html'
+	template_name = 'equipment/form.html'
 
 	model = Equipment
 
@@ -77,6 +77,38 @@ class CreateView(CreateView):
 
 	def dispatch(self, *args, **kwargs):
 		return super(CreateView, self).dispatch(*args, **kwargs)
+
+class UpdateView(UpdateView):
+	template_name = 'equipment/form.html'
+
+	model = Equipment
+
+	form_class = EquipmentForm
+
+	success_url = reverse_lazy("equipment:list") # Url para redirecionamento
+
+	def get_context_data(self, **kwargs):
+		context = super(UpdateView, self).get_context_data(**kwargs)
+
+		context['page_title'] = "Editar Equipamento"
+
+		context['form_title'] = "Editar Equipamento"
+
+		context['editable'] = True
+
+		context['form_button'] = "Salvar"
+		context['form_button_class'] = "success"
+
+		context['action_link'] = reverse("equipment:edit", kwargs=self.kwargs)
+
+		context['back_button'] = "Voltar"
+
+		context['back_link'] = reverse("equipment:list")
+
+		return context
+
+	def dispatch(self, *args, **kwargs):
+		return super(UpdateView, self).dispatch(*args, **kwargs)
 
 class DeleteView(DeleteView):
 	model = Equipment
