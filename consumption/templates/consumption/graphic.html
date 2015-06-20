@@ -2,14 +2,21 @@
 
 {% block content %}
   <div class="row clearfix" id="attachment_form">
-    <form action="{% url 'consumption:graphic' %}" method="POST" enctype="multipart/form-data" id="uploadform">
+    <form action="{% url 'consumption:importCSV' %}" method="POST" enctype="multipart/form-data" id="uploadform">
         {% csrf_token %}
         <label>Escolha um arquivo:</label><input name="csv" type="file">
         {% if csv_error%}
           {{csv_error}}
         {% endif %}
         <div class="form-group">
-            <input type="submit" class="btn btn-info" value="Add">
+            <input type="submit" class="btn btn-info" value="Importar">
+        </div>
+    </form>
+
+    <form action="{% url 'consumption:exportCSV' %}" method="GET" enctype="multipart/form-data" id="uploadform">
+        {% csrf_token %}
+        <div class="form-group">
+            <input type="submit" class="btn btn-info" value="Exportar">
         </div>
     </form>
 {% endblock %}
