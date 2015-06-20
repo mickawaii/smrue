@@ -11,6 +11,16 @@ class Consumption(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 
+	@classmethod
+	def new(cls, moment, current, voltage, equipment_id):
+		c = cls(
+			moment=moment, 
+			current=current, 
+			voltage=voltage, 
+			equipment_id=equipment_id,
+		)
+		return c
+
 	def __unicode__(self):
 		return self.moment
 

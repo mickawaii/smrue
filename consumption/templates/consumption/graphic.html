@@ -1,8 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="csv-buttons">
-  <button>Importar CSV</button>
-  <button>Exportar CSV</button>
-</div>
+  <div class="row clearfix" id="attachment_form">
+    <form action="{% url 'consumption:graphic' %}" method="POST" enctype="multipart/form-data" id="uploadform">
+        {% csrf_token %}
+        <label>Escolha um arquivo:</label><input name="csv" type="file">
+        {% if csv_error%}
+          {{csv_error}}
+        {% endif %}
+        <div class="form-group">
+            <input type="submit" class="btn btn-info" value="Add">
+        </div>
+    </form>
 {% endblock %}
