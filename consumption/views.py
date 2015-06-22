@@ -12,6 +12,7 @@ from consumption.models import Consumption
 from django.template import RequestContext
 import unicodecsv
 import csv
+import json
 
 # Create your views here.
 # class CoreListView(ListView, HasSystemMenuMixin):
@@ -62,5 +63,14 @@ def exportCSV(request):
 				'equipment_id': consumption.equipment_id
 				}
 			)
+
+def ajaxPlot(request):
+	if request.method == 'GET':
+		print(Consumption.objects.values('moment', 'current', 'voltage').all())
+		return_json = map(lambda set: 
+			[set['moment'].strftime("%d-%m-%Y"), set['voltage'] * set['current']], 
+			Consumption.objects.values('moment', 'current', 'voltage').all())
+
+		return HttpResponse(json.dumps({'plot': return_json}), content_type="application/json")
 
 	return response

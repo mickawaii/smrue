@@ -1,6 +1,20 @@
 {% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block css %}
+{% static "jquery-jqplot/jquery.jqplot.min.js" as jqplot_css %}
+<link href="{{jqplot_css}}" rel="stylesheet">
+{% endblock %}
+
+{% block js %}
+{% static "jquery-jqplot/jquery.jqplot.min.js" as jqplot_js %}
+{% static "javascript/data_plotter.js" as data_plotter %}
+<script src="{{jqplot_js}}"></script>
+<script src="{{data_plotter}}"></script>
+{% endblock %}
 
 {% block content %}
+  <div id="chart"></div>
   <div class="row clearfix" id="attachment_form">
     <form action="{% url 'consumption:importCSV' %}" method="POST" enctype="multipart/form-data" id="uploadform">
         {% csrf_token %}
@@ -19,4 +33,7 @@
             <input type="submit" class="btn btn-info" value="Exportar">
         </div>
     </form>
+  </div>
+
+
 {% endblock %}
