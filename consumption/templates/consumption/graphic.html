@@ -1,38 +1,77 @@
 {% extends "base.html" %}
 {% load static from staticfiles %}
+{% static "images/loading.gif" as loading_gif %}
+
+<script type="text/javascript" src="../plugins/jqplot.highlighter.min.js"></script>
+<script type="text/javascript" src="../plugins/jqplot.cursor.min.js"></script>
+<script type="text/javascript" src="../plugins/jqplot.dateAxisRenderer.min.js"></script>
 
 {% block css %}
-{% static "jquery-jqplot/jquery.jqplot.min.js" as jqplot_css %}
+{% static "jquery-jqplot/jquery.jqplot.min.css" as jqplot_css %}
+{% static "css/application.css" as app_css %}
+{% static "bootstrap-daterangepicker/daterangepicker-bs3.css" as daterangepicker_css %}
+<link href="{{daterangepicker_css}}" rel="stylesheet">
 <link href="{{jqplot_css}}" rel="stylesheet">
+<link href="{{app_css}}" rel="stylesheet">
+<!-- <link href="{{loading_gif}}" rel="image"> -->
 {% endblock %}
+
+<script type="text/javascript" src="../plugins/jqplot.barRenderer.min.js"></script>
 
 {% block js %}
 {% static "jquery-jqplot/jquery.jqplot.min.js" as jqplot_js %}
+{% static "jquery-jqplot/plugins/jqplot.highlighter.min.js" as jqplot_highlighter_js %}
+{% static "jquery-jqplot/plugins/jqplot.cursor.min.js" as jqplot_cursor_js %}
+{% static "jquery-jqplot/plugins/jqplot.dateAxisRenderer.min.js" as jqplot_dateAxisRenderer_js %}
+{% static "jquery-jqplot/plugins/jqplot.barRenderer.min.js" as jqplot_barRenderer_js %}
 {% static "javascript/data_plotter.js" as data_plotter %}
+{% static "bootstrap-daterangepicker/daterangepicker.js" as daterangepicker_js %}
 <script src="{{jqplot_js}}"></script>
+<script src="{{jqplot_highlighter_js}}"></script>
+<script src="{{jqplot_cursor_js}}"></script>
+<script src="{{jqplot_dateAxisRenderer_js}}"></script>
+<script src="{{jqplot_barRenderer_js}}"></script>
 <script src="{{data_plotter}}"></script>
+<script src="{{daterangepicker_js}}"></script>
 {% endblock %}
 
 {% block content %}
-  <div id="chart"></div>
-  <div class="row clearfix" id="attachment_form">
-    <form action="{% url 'consumption:importCSV' %}" method="POST" enctype="multipart/form-data" id="uploadform">
-        {% csrf_token %}
-        <label>Escolha um arquivo:</label><input name="csv" type="file">
-        {% if csv_error%}
-          {{csv_error}}
-        {% endif %}
-        <div class="form-group">
-            <input type="submit" class="btn btn-info" value="Importar">
-        </div>
-    </form>
 
-    <form action="{% url 'consumption:exportCSV' %}" method="GET" enctype="multipart/form-data" id="uploadform">
-        {% csrf_token %}
-        <div class="form-group">
-            <input type="submit" class="btn btn-info" value="Exportar">
-        </div>
-    </form>
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  <div class="row">
+    <div class="col-sm-3">
+      Filtro <br/>
+      <label>Data: </label><input class="date-range-picker form-control"/>
+    </div>
+    <div class="col-sm-9">
+      <div class="loading-gif"></div>
+      <div id="chart" ></div>
+      <div class="row clearfix" id="attachment_form">
+        <form action="{% url 'consumption:importCSV' %}" method="POST" enctype="multipart/form-data" id="uploadform">
+            {% csrf_token %}
+            <label>Escolha um arquivo:</label><input name="csv" type="file">
+            {% if csv_error%}
+              {{csv_error}}
+            {% endif %}
+            <div class="form-group">
+                <input type="submit" class="btn btn-info" value="Importar">
+            </div>
+        </form>
+
+        <form action="{% url 'consumption:exportCSV' %}" method="GET" enctype="multipart/form-data" id="uploadform">
+            {% csrf_token %}
+            <div class="form-group">
+                <input type="submit" class="btn btn-info" value="Exportar">
+            </div>
+        </form>
+      </div>
+    </div>
   </div>
 
 

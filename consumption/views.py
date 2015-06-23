@@ -6,6 +6,8 @@ from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
+from django.contrib import messages
+
 from equipment.models import Equipment
 from consumption.models import Consumption
 
@@ -34,14 +36,17 @@ def importCSV(request):
 		# if form.is_valid(): # All validation rules pass
 		csv_imported = request.FILES['csv']
 		csv_imported.open()
+		line = 0
 		try:
 			csv_reader = unicodecsv.DictReader(csv_imported, lineterminator = '\n', delimiter=';', encoding='latin-1')
 			for line in csv_reader:
+				line += 1
 				Consumption.new(line['moment'], line['current'], line['voltage'], line['equipment_id']).save()
 			url = reverse('consumption:graphic')
 			return HttpResponseRedirect(url)
 		except Exception, e:
 			url = reverse('consumption:graphic')
+			messages.error(request, 'Erro na linha %d do CSV', str(line))
 			return HttpResponseRedirect(url)
 
 def exportCSV(request):
@@ -66,11 +71,10 @@ def exportCSV(request):
 
 def ajaxPlot(request):
 	if request.method == 'GET':
-		print(Consumption.objects.values('moment', 'current', 'voltage').all())
 		return_json = map(lambda set: 
-			[set['moment'].strftime("%d-%m-%Y"), set['voltage'] * set['current']], 
+			[set['moment'].strftime("%d-%b-%y"), set['voltage'] * set['current']], 
 			Consumption.objects.values('moment', 'current', 'voltage').all())
-
+		print(return_json)
 		return HttpResponse(json.dumps({'plot': return_json}), content_type="application/json")
 
 	return response
