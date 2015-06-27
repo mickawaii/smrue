@@ -66,25 +66,25 @@ WSGI_APPLICATION = 'smrue.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django_postgrespool', 
-        'NAME': 'taskbusterdb',  
-        'USER': 'myusername',
-        'PASSWORD': 'mypassword',
-        'HOST': 'ec2-54-227-249-165.compute-1.amazonaws.com',  
-        'PORT': '5432', 
-        'PSQL': 'heroku pg:psql --app smrue-mi DATABASE',
-        'URL': 'postgres://tkihlhiauawvvx:SlfzPvh1rai6YSp6_lmckX3KfQ@ec2-54-227-249-165.compute-1.amazonaws.com:5432/d312ostfbfevth',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django_postgrespool', 
+#         'NAME': 'taskbusterdb',  
+#         'USER': 'myusername',
+#         'PASSWORD': 'mypassword',
+#         'HOST': 'ec2-54-227-249-165.compute-1.amazonaws.com',  
+#         'PORT': '5432', 
+#         'PSQL': 'heroku pg:psql --app smrue-mi DATABASE',
+#         'URL': 'postgres://tkihlhiauawvvx:SlfzPvh1rai6YSp6_lmckX3KfQ@ec2-54-227-249-165.compute-1.amazonaws.com:5432/d312ostfbfevth',
+#     }
+# }
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
@@ -115,10 +115,5 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
-DATABASES['default'] = dj_database_url.config()
+# DATABASES['default'] = dj_database_url.config()
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
-
-application = get_wsgi_application()
-# application = DjangoWhiteNoise(application)
-
-# Enable Connection Pooling

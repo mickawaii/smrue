@@ -4,6 +4,7 @@ from django.forms import ModelForm
 from django import forms
 from django.contrib.auth.models import Group, User
 from configuration.models import Profile
+from equipment.models import Equipment
 
 class ConfigForm(forms.Form):
 	income_type = forms.CharField(label='Tipo de Renda', widget=forms.Select(choices=Profile.INCOME_TYPE_CHOICES, attrs={'class': 'form-control'}))
