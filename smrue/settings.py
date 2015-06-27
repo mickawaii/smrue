@@ -10,6 +10,17 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import dj_database_url
+from django.core.wsgi import get_wsgi_application
+from whitenoise.django import DjangoWhiteNoise
+
+application = get_wsgi_application()
+application = DjangoWhiteNoise(application)
+DATABASES['default'] =  dj_database_url.config()
+
+# Enable Connection Pooling
+DATABASES['default']['ENGINE'] = 'django_postgrespool'
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -86,6 +97,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
+# STATIC_URL = '/static/'
+
+# STATIC_ROOT = 'static/'
+
+STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/static/'
 
-STATIC_ROOT = 'static/'
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
+
+DATABASES['default'] = dj_database_url.config()
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'

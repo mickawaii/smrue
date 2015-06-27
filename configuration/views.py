@@ -9,11 +9,14 @@ from django.utils.decorators import method_decorator
 
 # Classes de views
 from django.views.generic.base import TemplateView, View
+from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormView
 from django.http import HttpResponse, HttpResponseRedirect
 
 from sensor.models import Sensor
 from equipment.models import Equipment
-from configuration.forms import ConfigForm
+from configuration.models import Profile
+
+from configuration.forms import ConfigForm, UserForm
 import json
 from django.shortcuts import get_object_or_404
 from django.db import transaction
@@ -59,3 +62,33 @@ class ConfigView(TemplateView):
 	# @method_decorator(login_required(login_url=reverse_lazy('google_login:login_page')))
 	def dispatch(self, *args, **kwargs):
 		return super(ConfigView, self).dispatch(*args, **kwargs)
+
+class UserView(UpdateView):
+	template_name = 'configuration/user.html'
+
+	model = Profile
+
+	form_class = UserForm
+
+	success_url = reverse_lazy("home") # Url para redirecionamento
+
+	def get_context_data(self, **kwargs):
+		context = super(UserView, self).get_context_data(**kwargs)
+
+		context['page_title'] = 'Configurar Usuário'
+
+		context['action_link'] = reverse_lazy("configuration:user", kwargs={"user_pk": self.request.user.pk})
+
+		return context
+
+	def post(self, request):
+		user_pk = self.kwargs["user_pk"]
+
+
+		import pdb; pdb.set_trace()
+
+
+		return None
+
+	def dispatch(self, *args, **kwargs):
+		return super(UpdateView, self).dispatch(*args, **kwargs)
