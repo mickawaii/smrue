@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block js %}
+{% static "jquery-ui/jquery-ui.min.js" as jquery_ui %}
+<script src="{{jquery_ui}}"></script>
+{% endblock %}
+
+{% block css %}
+	<style type="text/css">
+		.equipment {
+			width: 200px;
+			margin-right: 20px;
+			text-align: center;
+			background: rgb(146, 225, 231);
+		}
+
+		.sensor-container {
+			text-align: center;
+			height: 80px;
+			background: rgb(226, 237, 255);
+		}
+
+		.sensor-container .sensor {
+			margin: 0 auto;
+		}
+
+		.free-sensors-container {
+		}
+
+		.free-sensors-container .sensor {
+			float: left;
+		}
+
+		.sensor {
+			cursor: pointer;
+			text-align: center;
+			width: 100px;
+			height: 80px;
+			background: yellow;
+		}
+
+		.sensor .glyphicon {
+			font-size: 50px;
+			display: block;
+		}
+
+		.ui-sortable-placeholder { 
+			visibility: visible !important; 
+			background: gray;
+		}
+
+		.sensor-container .ui-sortable-placeholder {
+			height: 0px !important;
+		}
+
+	</style>
+{% endblock %}
+
+{% block content %}
+	<div class="container">
+		<div class="page-header">
+			<h1>{{page_title}}</h1>
+		</div>
+
+		<div class="panel panel-default">
+			<div class="panel-body">
+				<form class='form-horizontal' action="{{ action_link }}" method="post">
+					{% csrf_token %}
+
+					{% for attr in form %}
+						{% if attr.is_hidden %}
+							{{attr}}
+						{% else %}
+							<div class="form-group">
+								<label class="col-sm-3 control-label">{{attr.label}}</label>
+								<div class="col-sm-5">
+									{{attr}}
+								</div>
+							</div>
+						{% endif %}
+
+						{% if attr.errors %}
+							<div class="col-sm-offset-2 col-sm-10 alert alert-danger" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>{{attr.errors.as_text}}</div>
+						{% endif %}
+
+						<br/>
+					{% endfor %}
+
+					<div class="form-group">
+						<label class="col-sm-3 control-label">Equipamentos e Sensores</label>
+
+						<div class="col-sm-9" id="js-equipments-container">
+							{% for equipment in equipments %}
+								<div class="equipment col-sm-3" data-id="{{equipment.id}}">
+									{{equipment.name}}
+
+									<div class="js-sensor-container sensor-container">
+										{% if equipment.sensor %}
+											<div class="sensor" data-id="{{equipment.sensor.id}}">
+												<i class="glyphicon glyphicon-collapse-up"></i>
+												{{equipment.sensor.name}}
+											</div>
+										{% endif %}
+									</div> 
+								</div>
+							{% endfor %}
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="col-sm-3 control-label">Sensores</label>
+
+						<div class="col-sm-9 free-sensors-container" id="js-free-sensors-container">
+							{% for sensor in free_sensors %}
+								<div class="sensor" data-id="{{sensor.id}}">
+									<i class="glyphicon glyphicon-collapse-up"></i>
+									{{sensor.name}}
+								</div>
+							{% endfor %}
+						</div>
+						<div class="clearfix"></div>
+					</div>
+
+					<div class="form-group">
+						<div class="col-sm-offset-3 col-sm-9">
+							<input name="Salvar" class="btn btn-success" type="submit" value="Salvar" />
+						</div>
+					</div>
+
+				</form>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}
+
+{% block js_bottom %}
+	<script type="text/javascript">
+		var sensorSortable = $(".js-sensor-container").sortable({ 
+			connectWith: "#js-free-sensors-container, .js-sensor-container",
+			forceHelperSize: true,
+			receive: function(event, ui) {
+				if ($(this).children().length > 1) {
+					$(ui.sender).sortable('cancel');
+				}
+			}
+		}).disableSelection();
+
+		var freeSensorSortable = $("#js-free-sensors-container").sortable({ 
+			connectWith: ".js-sensor-container",
+			forceHelperSize: true,
+		}).disableSelection();
+
+		$('form[method=post]').submit(function(event){
+			var equipments = $("#js-equipments-container .equipment").map(function(){
+				var object = {"equipment": $(this).data("id"), "sensor": ""};
+				var sensor = $(this).find(".sensor");
+				if (sensor.length > 0) {
+					object["sensor"] = sensor.data("id");
+				}
+				return object;
+			}).get();
+			$("#id_equipments").val(JSON.stringify(equipments));
+		});
+	</script>
+{% endblock %}

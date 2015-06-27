@@ -1,10 +1,8 @@
+# -*- encoding:utf-8 -*-
+
 from django.views.generic.base import TemplateView, View
-from django.views.generic.list import ListView
-from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormView
-from django.views.generic.detail import  DetailView
-from django.views.generic.edit import FormView
 from django.conf import settings
-from django.core.paginator import Paginator
+from django.core.urlresolvers import reverse, reverse_lazy
 
 from django.http.response import HttpResponse
 
@@ -21,5 +19,7 @@ class HomeView(TemplateView):
 		context = super(HomeView, self).get_context_data(**kwargs)
 
 		context['page_title'] = 'SMRUE'
+
+		context['config_user_link'] = reverse_lazy("configuration:user", kwargs={"user_pk": self.request.user.pk})
 
 		return context

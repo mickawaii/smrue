@@ -1,1 +1,1 @@
-web: gunicorn smrue.wsgi:
+web: python manage.py runserver

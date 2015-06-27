@@ -1,0 +1,31 @@
+{% extends "base_form.html" %}
+{% load static from staticfiles %}
+
+{% block js %}
+{% static "jquery-ui/jquery-ui.min.js" as jquery_ui %}
+{% static "jquery-mask/jquery.mask.min.js" as jquery_mask %}
+<script src="{{jquery_ui}}"></script>
+<script src="{{jquery_mask}}"></script>
+{% endblock %}
+
+{% block form_body %}
+	{% for attr in form %}
+		{% if attr.is_hidden %}
+			{{attr}}
+		{% else %}
+			<div class="form-group">
+				<label class="col-sm-2 control-label">{{attr.label}}</label>
+				<div class="col-sm-10">
+					{{attr}}
+				</div>
+			</div>
+		{% endif %}
+
+		{% if attr.errors %}
+		<div class="col-sm-offset-2 col-sm-10 alert alert-danger" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>{{attr.errors.as_text}}</div>
+		{% endif %}
+
+		<br/>
+	{% endfor %}
+
+{% endblock %}
