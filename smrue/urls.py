@@ -16,4 +16,8 @@ urlpatterns = patterns('',
     url(r'^goals/', include('goal.urls', namespace="goal")),
     url(r'^configuration/', include('configuration.urls', namespace="configuration")),
     url(r'^consumption/', include('consumption.urls', namespace="consumption")),
+
+    url(r'^login$', views.LoginView.as_view(), name='login'),
+    url(r'^logout$', views.LogoutView.as_view(), name='logout'),
+
 )
