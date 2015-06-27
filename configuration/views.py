@@ -84,10 +84,6 @@ class UserView(UpdateView):
 	def post(self, request):
 		user_pk = self.kwargs["user_pk"]
 
-
-		import pdb; pdb.set_trace()
-
-
 		return None
 
 	def dispatch(self, *args, **kwargs):
