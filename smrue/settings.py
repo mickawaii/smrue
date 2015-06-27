@@ -12,14 +12,7 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 import dj_database_url
 from django.core.wsgi import get_wsgi_application
-from whitenoise.django import DjangoWhiteNoise
-
-application = get_wsgi_application()
-application = DjangoWhiteNoise(application)
-DATABASES['default'] =  dj_database_url.config()
-
-# Enable Connection Pooling
-DATABASES['default']['ENGINE'] = 'django_postgrespool'
+# from whitenoise.django import DjangoWhiteNoise
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -110,3 +103,9 @@ STATICFILES_DIRS = (
 
 DATABASES['default'] = dj_database_url.config()
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+
+application = get_wsgi_application()
+# application = DjangoWhiteNoise(application)
+
+# Enable Connection Pooling
+DATABASES['default']['ENGINE'] = 'django_postgrespool'
