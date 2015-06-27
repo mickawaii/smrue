@@ -10,9 +10,12 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import socket
 import dj_database_url
 from django.core.wsgi import get_wsgi_application
 # from whitenoise.django import DjangoWhiteNoise
+
+PRODUCTION_HOST_NAME = "db32a008-53a1-4a81-8ac9-06365e391753"
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -73,19 +76,6 @@ DATABASES = {
     }
 }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django_postgrespool', 
-#         'NAME': 'taskbusterdb',  
-#         'USER': 'myusername',
-#         'PASSWORD': 'mypassword',
-#         'HOST': 'ec2-54-227-249-165.compute-1.amazonaws.com',  
-#         'PORT': '5432', 
-#         'PSQL': 'heroku pg:psql --app smrue-mi DATABASE',
-#         'URL': 'postgres://tkihlhiauawvvx:SlfzPvh1rai6YSp6_lmckX3KfQ@ec2-54-227-249-165.compute-1.amazonaws.com:5432/d312ostfbfevth',
-#     }
-# }
-
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
 
@@ -115,5 +105,19 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
-# DATABASES['default'] = dj_database_url.config()
-STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+if socket.gethostname() == PRODUCTION_HOST_NAME:
+    DEBUG = TEMPLATE_DEBUG = False
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django_postgrespool', 
+            'NAME': 'd312ostfbfevth',  
+            'USER': 'tkihlhiauawvvx',
+            'PASSWORD': 'SlfzPvh1rai6YSp6_lmckX3KfQ',
+            'HOST': 'ec2-54-227-249-165.compute-1.amazonaws.com',  
+            'PORT': '5432', 
+        }
+    }
+
+    DATABASES['default'] = dj_database_url.config()
+    STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
