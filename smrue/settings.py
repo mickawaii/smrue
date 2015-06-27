@@ -10,6 +10,10 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import dj_database_url
+from django.core.wsgi import get_wsgi_application
+# from whitenoise.django import DjangoWhiteNoise
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -42,6 +46,7 @@ INSTALLED_APPS = (
     'goal',
     'sensor',
     'aes_rate',
+    'configuration',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -61,12 +66,12 @@ WSGI_APPLICATION = 'smrue.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
@@ -85,6 +90,22 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
+# STATIC_URL = '/static/'
+
+# STATIC_ROOT = 'static/'
+
+STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/static/'
 
-STATIC_ROOT = 'static/'
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
+
+DATABASES['default'] = dj_database_url.config()
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+
+application = get_wsgi_application()
+# application = DjangoWhiteNoise(application)
+
+# Enable Connection Pooling
+DATABASES['default']['ENGINE'] = 'django_postgrespool'

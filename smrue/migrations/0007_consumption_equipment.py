@@ -16,4 +16,10 @@ class Migration(migrations.Migration):
             name='equipment',
             field=models.ForeignKey(to='smrue.Equipment', null=True),
         ),
+        migrations.AlterField(
+            model_name='sensor',
+            name='equipment',
+            field=models.OneToOneField(null=True, blank=True, to='smrue.Equipment'),
+        ),
+
     ]
