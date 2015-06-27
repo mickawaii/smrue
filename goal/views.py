@@ -76,3 +76,41 @@ class CreateView(CreateView):
 
 	def dispatch(self, *args, **kwargs):
 		return super(CreateView, self).dispatch(*args, **kwargs)
+
+class DeleteView(DeleteView):
+	model = Goal
+	success_url = reverse_lazy("goal:list")
+
+
+class UpdateView(UpdateView):
+	model = Goal
+	form_class = GoalForm
+	template_name = 'goal/create_form.html'
+	success_url = reverse_lazy("goal:list") # Url para redirecionamento
+
+	def get_context_data(self, **kwargs):
+		context = super(UpdateView, self).get_context_data(**kwargs)
+
+		context['page_title'] = "Editar Meta"
+
+		context['form_title'] = "Editar Meta"
+		
+		context['editable'] = True
+
+		context['form_button'] = "Salvar"
+		context['form_button_class'] = "success"
+
+		context['back_button'] = "Voltar"
+
+		context['back_link'] = reverse("goal:list")
+
+
+
+		return context
+
+	def get_object(self, queryset=None):
+		goal = Goal.objects.get(id=self.kwargs['pk'])
+		return goal
+
+	def dispatch(self, *args, **kwargs):
+		return super(UpdateView, self).dispatch(*args, **kwargs)
