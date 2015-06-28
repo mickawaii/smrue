@@ -1,11 +1,17 @@
 {% extends "base_form.html" %}
 {% load static from staticfiles %}
 
+{% block css %}
+{% static "bootstrap-daterangepicker/daterangepicker-bs3.css" as daterangepicker_css %}
+<link href="{{daterangepicker_css}}" rel="stylesheet">
+{% endblock %}
+
 {% block js %}
-{% static "jquery-ui/jquery-ui.min.js" as jquery_ui %}
-{% static "jquery-mask/jquery.mask.min.js" as jquery_mask %}
-<script src="{{jquery_ui}}"></script>
-<script src="{{jquery_mask}}"></script>
+{% static "bootstrap-daterangepicker/moment.min.js" as moment_js %}
+{% static "bootstrap-daterangepicker/daterangepicker.js" as daterangepicker_js %}
+
+<script src="{{moment_js}}"></script>
+<script src="{{daterangepicker_js}}"></script>
 {% endblock %}
 
 {% block form_body %}

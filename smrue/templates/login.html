@@ -28,3 +28,7 @@
 	{% endfor %}
 
 {% endblock %}
+
+{% block buttons %}
+	<a href="{% url 'configuration:user' %}" class="btn btn-default">Registrar</a>
+{% endblock %}

@@ -1,0 +1,9 @@
+<input id="{{id}}" name="{{name}}" {% for key, value in attrs.items %}{{key}}="{{value}}"{% endfor %} type="text" {% if value %}value="{{value}}"{% endif %} />
+
+<script type="text/javascript">
+	$('#{{id}}').daterangepicker({
+	  	startDate: moment(),
+	  	format:'DD/MM/YYYY',
+	  	singleDatePicker:true
+	});
+</script>

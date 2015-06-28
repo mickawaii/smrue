@@ -21,7 +21,7 @@ class HomeView(TemplateView):
 
 		context['page_title'] = 'SMRUE'
 
-		context['current_user'] = self.request.user
+		context['current_user'] = self.request.user.username
 
 		return context
 
@@ -52,7 +52,7 @@ class LoginView(FormView):
 		context['form_button'] = 'Fazer Login'
 		
 		context['editable'] = True
-
+		
 		context['action_link'] = reverse("login")
 
 		context['back_link'] = reverse("home")

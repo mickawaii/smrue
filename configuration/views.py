@@ -15,8 +15,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from sensor.models import Sensor
 from equipment.models import Equipment
 from configuration.models import Profile
-
-from configuration.forms import ConfigForm, UserForm
+from django.contrib.auth.models import Group, User
+from django.contrib.auth import authenticate, login, logout
+from configuration.forms import ConfigForm, UserSetupForm
 import json
 from django.shortcuts import get_object_or_404
 from django.db import transaction
@@ -63,28 +64,44 @@ class ConfigView(TemplateView):
 	def dispatch(self, *args, **kwargs):
 		return super(ConfigView, self).dispatch(*args, **kwargs)
 
-class UserView(UpdateView):
+class UserView(CreateView):
 	template_name = 'configuration/user.html'
 
-	model = Profile
+	model = User
 
-	form_class = UserForm
+	form_class = UserSetupForm
 
 	success_url = reverse_lazy("home") # Url para redirecionamento
 
 	def get_context_data(self, **kwargs):
 		context = super(UserView, self).get_context_data(**kwargs)
 
-		context['page_title'] = 'Configurar Usuário'
+		context['page_title'] = 'Registro de Usuário'
 
-		context['action_link'] = reverse_lazy("configuration:user", kwargs={"user_pk": self.request.user.pk})
+		context['form_title'] = 'Registro de Usuário'
+
+		context['action_link'] = reverse_lazy("configuration:user")
+
+		context['form_button'] = "Salvar"
+		context['form_button_class'] = "success"
+
+		context['editable'] = True
 
 		return context
 
-	def post(self, request):
-		user_pk = self.kwargs["user_pk"]
+	def form_valid(self, form):
+		user = form.save()
+		income_type = form.cleaned_data["income_type"]
+		username = form['username'].value()
+		password = form['password1'].value()
 
-		return None
+		if income_type:
+			Profile.objects.create(user=user,income_type=income_type)
+
+		user = authenticate(username=username, password=password)
+		login(self.request, user)
+
+		return HttpResponseRedirect(reverse("configuration:home"))
 
 	def dispatch(self, *args, **kwargs):
-		return super(UpdateView, self).dispatch(*args, **kwargs)
+		return super(UserView, self).dispatch(*args, **kwargs)
