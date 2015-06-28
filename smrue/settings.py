@@ -10,9 +10,12 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+import socket
 import dj_database_url
 from django.core.wsgi import get_wsgi_application
 # from whitenoise.django import DjangoWhiteNoise
+
+PRODUCTION_HOST_NAME = "db32a008-53a1-4a81-8ac9-06365e391753"
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -96,16 +99,25 @@ USE_TZ = True
 
 STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/static/'
+MEDIA_ROOT = 'media'
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
-DATABASES['default'] = dj_database_url.config()
-STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+if socket.gethostname() == PRODUCTION_HOST_NAME:
+    DEBUG = TEMPLATE_DEBUG = False
 
-application = get_wsgi_application()
-# application = DjangoWhiteNoise(application)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django_postgrespool', 
+            'NAME': 'd312ostfbfevth',  
+            'USER': 'tkihlhiauawvvx',
+            'PASSWORD': 'SlfzPvh1rai6YSp6_lmckX3KfQ',
+            'HOST': 'ec2-54-227-249-165.compute-1.amazonaws.com',  
+            'PORT': '5432', 
+        }
+    }
 
-# Enable Connection Pooling
-DATABASES['default']['ENGINE'] = 'django_postgrespool'
+    DATABASES['default'] = dj_database_url.config()
+    STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'

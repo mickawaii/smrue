@@ -44,32 +44,30 @@
 
   <body>
     <!-- Fixed navbar -->
-    <div class="navbar navbar-default" role="navigation">
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
       <div class="container-fluid">
         <div class="navbar-header">
           <a class="navbar-brand" href="{% url 'home' %}">SMRUE</a>
-          <ul class="nav navbar-nav">
+        </div>
+
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-left">
             <li><a href="{% url 'admin:index' %}">Admin</a></li>
-            <li><a href="{% url 'consumption:graphic' %}">Consumo</a></li>
+            <li><a href="#">Consumo</a></li>
             <li><a href="{% url 'equipment:list' %}">Equipamentos</a></li>
             <li><a href="{% url 'sensor:list' %}">Sensores</a></li>
             <li><a href="{% url 'configuration:config' %}">Configurações</a></li>
             <li><a href="{% url 'goal:list' %}">Metas</a></li>
-            <li><a href="{% url 'admin:index' %}">Admin</a></li>
           </ul>
-        </div>
 
-        <div class="navbar-collapse collapse">
-          {% if user.is_authenticated %}
-            <div class="navbar-right">
-              <div class="navbar-form">
-              </div>
-            </div>
-            <p class="navbar-right navbar-text">Olá, {{user.username}}</p>
-          {% else %}
-            <div class="navbar-form navbar-right">
-            </div>
-          {% endif %}
+          <ul class="nav navbar-nav navbar-right">
+            {% if user.is_authenticated %}
+              <p class="navbar-text">Olá, {{user.username}}</p>
+              <li><a href="{% url 'logout' %}">Logout</a></li>
+            {% else %}
+              <li><a href="{% url 'login' %}">Login</a></li>
+            {% endif %}
+          </ul>
         </div><!--/.nav-collapse -->
       </div>
     </div>
