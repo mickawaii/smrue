@@ -22,7 +22,7 @@ class Consumption(models.Model):
 		return c
 
 	def __unicode__(self):
-		return self.moment
+		return self.moment.strftime('%d-%m-%Y %H:%M')
 
 	class Meta:
 		app_label = 'smrue'
