@@ -95,9 +95,8 @@ USE_TZ = True
 
 # STATIC_URL = '/static/'
 
-# STATIC_ROOT = 'static/'
 
-STATIC_ROOT = 'static/'
+STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/static/'
 MEDIA_ROOT = 'media'
 
@@ -106,6 +105,8 @@ STATICFILES_DIRS = (
 )
 
 if socket.gethostname() == PRODUCTION_HOST_NAME:
+    STATIC_ROOT = 'static/'
+    
     DEBUG = TEMPLATE_DEBUG = False
 
     DATABASES = {
