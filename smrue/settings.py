@@ -105,7 +105,6 @@ STATICFILES_DIRS = (
 )
 
 if socket.gethostname() == PRODUCTION_HOST_NAME:
-    STATIC_ROOT = 'static/'
     
     DEBUG = TEMPLATE_DEBUG = False
 
