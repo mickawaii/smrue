@@ -12,6 +12,8 @@ from equipment.models import Equipment
 from consumption.models import Consumption
 
 from django.template import RequestContext
+
+from datetime import datetime, timedelta
 import unicodecsv
 import csv
 import json
@@ -29,6 +31,12 @@ class GraphicView(TemplateView):
 	form_class = UploadFileForm
 	template_name = "consumption/graphic.html"
 	form = UploadFileForm()
+
+	def get_context_data(self, **kwargs):
+		context = super(GraphicView, self).get_context_data(**kwargs)
+
+		context["measurement_units"] = Equipment.MEASUREMENT_UNITS
+		return context
 
 def importCSV(request):
 	if request.method == 'POST': # If the form has been submitted...
@@ -71,10 +79,25 @@ def exportCSV(request):
 
 def ajaxPlot(request):
 	if request.method == 'GET':
-		return_json = map(lambda set: 
-			[set['moment'].strftime("%d-%b-%y"), set['voltage'] * set['current']], 
-			Consumption.objects.values('moment', 'current', 'voltage').all())
-		print(return_json)
-		return HttpResponse(json.dumps({'plot': return_json}), content_type="application/json")
+		try:
+			timeFormat = "%d-%m-%Y"
+			print(timeFormat)
 
-	return response
+			dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
+			print(dateTimeStart)
+			dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
+			print(dateTimeEnd)
+
+
+			print("HHHHHHHHHHHHHHHHHHHHHH")
+			print(datetime.strptime(dateTimeStart, timeFormat))
+			print(datetime.strptime(dateTimeEnd, timeFormat))
+			
+			return_json = map(lambda set: 
+				[set['moment'].strftime("%Y-%m-%d %H:%M:%S"), set['voltage'] * set['current']], 
+				Consumption.objects.values('moment', 'current', 'voltage').filter(moment__range=[datetime.strptime(dateTimeStart, timeFormat), datetime.strptime(dateTimeEnd, timeFormat)])
+			)
+			print(return_json)
+			return HttpResponse(json.dumps({'plots': [[return_json]]}), content_type="application/json")
+		except:
+			return HttpResponse(json.dumps({'plots': [[[]]]}), content_type="application/json")
