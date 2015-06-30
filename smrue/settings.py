@@ -105,7 +105,7 @@ STATICFILES_DIRS = (
 )
 
 if socket.gethostname() == PRODUCTION_HOST_NAME:
-    
+
     DEBUG = TEMPLATE_DEBUG = False
 
     DATABASES = {
@@ -120,4 +120,4 @@ if socket.gethostname() == PRODUCTION_HOST_NAME:
     }
 
     DATABASES['default'] = dj_database_url.config()
-    STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+    # STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
