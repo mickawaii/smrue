@@ -99,7 +99,7 @@ STATICFILES_DIRS = (
 
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
-if os.environ.get('BASE_IRI', 'localhost') == "heroku":
+if 'BASE_IRI' in os.environ:
 
 	DEBUG = TEMPLATE_DEBUG = False
 
