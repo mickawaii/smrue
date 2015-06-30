@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.conf import settings
 from django.views.generic.base import View, TemplateView
-from consumption.forms import UploadFileForm
+# from consumption.forms import UploadFileForm
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
@@ -17,9 +17,9 @@ import csv
 import json
 
 class GraphicView(TemplateView):
-	form_class = UploadFileForm
+	# form_class = UploadFileForm
 	template_name = "consumption/graphic.html"
-	form = UploadFileForm()
+	# form = UploadFileForm()
 
 	def get_context_data(self, **kwargs):
 		context = super(GraphicView, self).get_context_data(**kwargs)
@@ -29,7 +29,7 @@ class GraphicView(TemplateView):
 
 def importCSV(request):
 	if request.method == 'POST': # If the form has been submitted...
-		form = UploadFileForm(request.POST) # A form bound to the POST data
+		# form = UploadFileForm(request.POST) # A form bound to the POST data
 		# if form.is_valid(): # All validation rules pass
 		csv_imported = request.FILES['csv']
 		csv_imported.open()
