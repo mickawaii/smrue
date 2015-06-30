@@ -14,3 +14,13 @@ body {
 .text-right {
 	text-align:right;
 }
+
+.loading-gif{
+  background-image: url("/static/images/loading.gif");
+  background-repeat: no-repeat;
+  position: relative;
+  height: 300px;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+}
