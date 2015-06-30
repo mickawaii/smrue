@@ -37,28 +37,28 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'smrue',
-    'equipment',
-    'consumption',
-    'goal',
-    'sensor',
-    'aes_rate',
-    'configuration',
+	'django.contrib.admin',
+	'django.contrib.auth',
+	'django.contrib.contenttypes',
+	'django.contrib.sessions',
+	'django.contrib.messages',
+	'django.contrib.staticfiles',
+	'smrue',
+	'equipment',
+	'consumption',
+	'goal',
+	'sensor',
+	'aes_rate',
+	'configuration',
 )
 
 MIDDLEWARE_CLASSES = (
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'django.contrib.sessions.middleware.SessionMiddleware',
+	'django.middleware.common.CommonMiddleware',
+	'django.middleware.csrf.CsrfViewMiddleware',
+	'django.contrib.auth.middleware.AuthenticationMiddleware',
+	'django.contrib.messages.middleware.MessageMiddleware',
+	'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
 ROOT_URLCONF = 'smrue.urls'
@@ -70,10 +70,10 @@ WSGI_APPLICATION = 'smrue.wsgi.application'
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+	'default': {
+		'ENGINE': 'django.db.backends.sqlite3',
+		'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+	}
 }
 
 # Internationalization
@@ -98,23 +98,24 @@ STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
+	os.path.join(BASE_DIR, 'static'),
 )
+
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 if socket.gethostname() == PRODUCTION_HOST_NAME:
 
-    DEBUG = TEMPLATE_DEBUG = False
+	DEBUG = TEMPLATE_DEBUG = False
 
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django_postgrespool', 
-            'NAME': 'd312ostfbfevth',  
-            'USER': 'tkihlhiauawvvx',
-            'PASSWORD': 'SlfzPvh1rai6YSp6_lmckX3KfQ',
-            'HOST': 'ec2-54-227-249-165.compute-1.amazonaws.com',  
-            'PORT': '5432', 
-        }
-    }
+	# DATABASES = {
+	#     'default': {
+	#         'ENGINE': 'django_postgrespool', 
+	#         'NAME': 'd312ostfbfevth',  
+	#         'USER': 'tkihlhiauawvvx',
+	#         'PASSWORD': 'SlfzPvh1rai6YSp6_lmckX3KfQ',
+	#         'HOST': 'ec2-54-227-249-165.compute-1.amazonaws.com',  
+	#         'PORT': '5432', 
+	#     }
+	# }
 
-    DATABASES['default'] = dj_database_url.config()
-    STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+	DATABASES['default'] = dj_database_url.config()
