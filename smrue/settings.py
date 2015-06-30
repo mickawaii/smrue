@@ -13,9 +13,6 @@ import os
 import socket
 import dj_database_url
 from django.core.wsgi import get_wsgi_application
-# from whitenoise.django import DjangoWhiteNoise
-
-PRODUCTION_HOST_NAME = "db32a008-53a1-4a81-8ac9-06365e391753"
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -93,7 +90,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/static/'
 
@@ -103,7 +99,7 @@ STATICFILES_DIRS = (
 
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
-if socket.gethostname() == PRODUCTION_HOST_NAME:
+if os.environ.get('BASE_IRI', 'localhost') == "heroku":
 
 	DEBUG = TEMPLATE_DEBUG = False
 
