@@ -1,9 +1,8 @@
 from django.shortcuts import render
 from django.conf import settings
 from django.views.generic.base import View, TemplateView
-# from consumption.forms import UploadFileForm
-from django.http import HttpResponseRedirect
-from django.http import HttpResponse
+from consumption.forms import UploadFileForm
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
 from django.contrib import messages
