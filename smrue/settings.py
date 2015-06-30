@@ -107,15 +107,15 @@ if socket.gethostname() == PRODUCTION_HOST_NAME:
 
 	DEBUG = TEMPLATE_DEBUG = False
 
-	# DATABASES = {
-	#     'default': {
-	#         'ENGINE': 'django_postgrespool', 
-	#         'NAME': 'd312ostfbfevth',  
-	#         'USER': 'tkihlhiauawvvx',
-	#         'PASSWORD': 'SlfzPvh1rai6YSp6_lmckX3KfQ',
-	#         'HOST': 'ec2-54-227-249-165.compute-1.amazonaws.com',  
-	#         'PORT': '5432', 
-	#     }
-	# }
+	DATABASES = {
+		'default': {
+			'ENGINE': 'django_postgrespool', 
+			'NAME': 'd312ostfbfevth',  
+			'USER': 'tkihlhiauawvvx',
+			'PASSWORD': 'SlfzPvh1rai6YSp6_lmckX3KfQ',
+			'HOST': 'ec2-54-227-249-165.compute-1.amazonaws.com',  
+			'PORT': '5432', 
+		}
+	}
 
 	DATABASES['default'] = dj_database_url.config()
