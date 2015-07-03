@@ -1,8 +1,48 @@
 $(function(){
 
+	var dateTimeInputSelector = "input.date-time-range-picker";
+	var dateInputSelector = "input.date-range-picker";
+	var integrateButtonSelector = "button.integrate";
+	var unintegrateButtonSelector = "button.power";
+	var unitSelecSelector =  "select.unit";
+	var unit = "W";
+	var valueIndex = 1;
+	var dateIndex = 0;
+	var data = null;
+	var plot;
+
+	var plotDataCopy = function(plotArray){
+		var copy = [];
+		for(var i = 0; i < plotArray[0][0].length; i ++){
+			copy.push([plotArray[0][0][i][0], plotArray[0][0][i][1]]);
+		}
+		return copy;
+	}
+
+	var integrate = function(plotArray){
+		var dataCopy = plotDataCopy(plotArray);
+		var referenceValue = 0;
+
+		for(var i = 0; i < dataCopy.length; i ++){
+			if(i == 0){
+				referenceValue = dataCopy[i][valueIndex];
+			}else{
+				dataCopy[i][valueIndex] += referenceValue;
+				referenceValue = dataCopy[i][valueIndex];
+			}
+		}
+
+
+		return [[dataCopy]];
+	};
+
 	var initializePlot = function(){
+
 		$(".loading-gif").show();
 		$("#chart").hide();
+
+		$(unintegrateButtonSelector).hide();
+		$(integrateButtonSelector).show();
 
 		$.ajax({ 
 			type: 'GET', 
@@ -27,19 +67,83 @@ $(function(){
 							yaxis:{
 								label: 'Potência',
 								tickOptions:{
-									formatString:'W%.2f'
+									formatString:'W%.3f'
 								}
 							}
 						}
 					};
 
 
+				data = response.plots;
 				plot = $.jqplot ('chart', validatePlotData(response.plots), $.extend(defaultPlotOptions, newOptions));
 			}
 		});
+
+		$(unitSelecSelector).change(function(){
+			unit = $(this).val();
+		});
+
+		$(integrateButtonSelector).click(function(){
+
+
+			var integratedData = integrate(data);
+
+			var newOptions = {
+				data: integratedData[0]
+			}
+
+			plot.replot($.extend(defaultPlotOptions, newOptions));
+			$(unintegrateButtonSelector).show();
+			$(integrateButtonSelector).hide();
+		});
+
+		$(unintegrateButtonSelector).click(function(){
+
+			var newOptions = {
+				data: data[0]
+			}
+			plot.replot($.extend(defaultPlotOptions, newOptions));
+			$(unintegrateButtonSelector).hide();
+			$(integrateButtonSelector).show();
+		});
+
 	}();
 
-	$("input.date-range-picker").on("apply.daterangepicker", function(event, picker){
+	var getDateRangeAndGetData = function(pickerSelector){
+		var dateRange = $(pickerSelector).val();
+		var dateStart = dateRange.split(" - ")[0].split("/").join("-")
+		var dateEnd = dateRange.split(" - ")[1] .split("/").join("-")
+
+		changeDate(1,dateStart,dateEnd,4,5);
+	}
+
+	$(dateTimeInputSelector).on("apply.daterangepicker", function(event, picker){
+
+		var newOptions = 
+			{
+				title: 'Título',
+				axes:{
+					xaxis:{
+						label: 'Data',
+						renderer:$.jqplot.DateAxisRenderer,
+						tickOptions:{
+							formatString:'%I:%M'
+						}
+					},
+					yaxis:{
+						label: 'Potência',
+						tickOptions:{
+							formatString:'W%.2f'
+						}
+					}
+				}
+			};
+
+		getDateRangeAndGetData(dateTimeInputSelector);
+		
+	});
+
+	$(dateInputSelector).on("apply.daterangepicker", function(event, picker){
 
 		var newOptions = 
 			{
@@ -60,12 +164,9 @@ $(function(){
 					}
 				}
 			};
-
-		var dateRange = $("input.date-range-picker").val();
-		var dateStart = dateRange.split(" - ")[0].split("/").join("-")
-		var dateEnd = dateRange.split(" - ")[1] .split("/").join("-")
-
-		replot(1,dateStart,dateEnd,4,5);
+			
+		getDateRangeAndGetData(dateInputSelector);
+		
 	});
 
 	var validatePlotData = function(plotsData){
@@ -110,7 +211,7 @@ $(function(){
 				};
 
 
-	var replot = function(yUnit, xStart, xEnd, plotNewOptions, extraData){
+	var changeDate = function(yUnit, xStart, xEnd, plotNewOptions, extraData){
 		$("#chart").hide();
 		$(".loading-gif").show();
 
@@ -123,7 +224,8 @@ $(function(){
 					"yUnit": yUnit,
 					"xStart": xStart,
 					"xEnd": xEnd,
-					"extraData": extraData
+					"extraData": extraData,
+					"unit": unit
 				},
 			success: function (response) { 
 
@@ -135,10 +237,10 @@ $(function(){
 					data: newPlotData[0]
 				} 
 
+				data = newPlotData;
 				plot.replot($.extend(defaultPlotOptions, newOptions));
 		}
 	});
-
 	
 	};
 });

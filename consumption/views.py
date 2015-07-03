@@ -69,13 +69,35 @@ def exportCSV(request):
 def ajaxPlot(request):
 	if request.method == 'GET':
 		try:
-			timeFormat = "%d-%m-%Y"
+			timeFormat = ""
+			timeRange = request.GET.get("timeRange", "daily")
+
+			if timeRange == "daily":
+					timeFormat = "%d-%m-%Y"
+			else:
+				if timeRange == "hourly":
+					timeFormat = "%d-%m-%Y %I:%M %p"
+
+			print(timeFormat)
 
 			dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
 			dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
+			print(dateTimeEnd)
+			unit = request.GET.get("unit", Equipment.MEASUREMENT_UNITS[0][0])
+
+			magnitude = 1
+			if unit == Equipment.MEASUREMENT_UNITS[0][0] or unit == Equipment.MEASUREMENT_UNITS[0][1]:
+				magnitude = 1
+			else:
+				magnitude = 0.001
+
+
+			print("HHHHHHHHHHHHHHHHHHHHHH")
+			print(datetime.strptime(dateTimeStart, timeFormat))
+			print(datetime.strptime(dateTimeEnd, timeFormat))
 			
 			return_json = map(lambda set: 
-				[set['moment'].strftime("%Y-%m-%d %H:%M:%S"), set['voltage'] * set['current']], 
+				[set['moment'].strftime("%Y-%m-%d %H:%M"), set['voltage'] * set['current'] * magnitude], 
 				Consumption.objects.values('moment', 'current', 'voltage').filter(moment__range=[datetime.strptime(dateTimeStart, timeFormat), datetime.strptime(dateTimeEnd, timeFormat)])
 			)
 			return HttpResponse(json.dumps({'plots': [[return_json]]}), content_type="application/json")

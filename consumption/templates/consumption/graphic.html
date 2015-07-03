@@ -27,6 +27,7 @@
 {% static "jquery-jqplot/plugins/jqplot.barRenderer.min.js" as jqplot_barRenderer_js %}
 {% static "javascript/data_plotter.js" as data_plotter %}
 {% static "bootstrap-daterangepicker/daterangepicker.js" as daterangepicker_js %}
+{% static "javascript/date_time_range_picker_past_only.js" as date_time_range_picker_js %}
 {% static "javascript/date_range_picker_past_only.js" as date_range_picker_js %}
 <script src="{{moment_js}}"></script>
 <script src="{{jqplot_js}}"></script>
@@ -36,6 +37,7 @@
 <script src="{{jqplot_barRenderer_js}}"></script>
 <script src="{{data_plotter}}"></script>
 <script src="{{daterangepicker_js}}"></script>
+<script src="{{date_time_range_picker_js}}"></script>
 <script src="{{date_range_picker_js}}"></script>
 {% endblock %}
 
@@ -48,12 +50,18 @@
       {% endfor %}
     </ul>
   {% endif %}
+
   <div class="row">
     <div class="col-sm-3">
       Filtro <br/>
-      <label>Data: </label><input class="date-range-picker form-control"/>
+      <label>Data (por hora): </label><input class="date-time-range-picker form-control"/>
+      <label>Data (por dia): </label><input class="date-range-picker form-control"/>
+
+      <button class="integrate">Integrate Plot</button>
+      <button class="power">Go back</button>
+      
       <label>Unidade de medida: </label>
-      <select>
+      <select class="unit">
         {% for acronym, v in measurement_units %}
             <option value="{{acronym}}">{{ v }}</option>
         {% endfor %}
