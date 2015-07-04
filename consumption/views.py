@@ -1,3 +1,5 @@
+from django.db.models import Avg
+
 from django.shortcuts import render
 from django.conf import settings
 from django.views.generic.base import View, TemplateView
@@ -66,14 +68,40 @@ def exportCSV(request):
 				}
 			)
 
+def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, magnitude):
+	aggregatedQuery= None
+	dateFormat = ""
+	return_json = None	
+
+	if timeRange == "daily":
+		aggregatedQuery = Consumption.objects.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lte=datetime.strptime(dateTimeEnd, dateTimeFormat) + timedelta(hours=23, minutes=59, seconds=59)).extra({'moment': "date(moment)"}).values('moment').annotate(current=Avg('current'), voltage=Avg('voltage'))
+		dateFormat = "%Y-%m-%d"
+
+		return_json = map(lambda set: 
+			[set['moment'], set['voltage'] * set['current']], 
+				aggregatedQuery
+		)
+		
+	else:
+		if timeRange == "hourly":
+			aggregatedQuery = Consumption.objects.values('moment', 'current', 'voltage').filter(moment__range=[datetime.strptime(dateTimeStart, dateTimeFormat), datetime.strptime(dateTimeEnd, dateTimeFormat)])
+			dateFormat = "%Y-%m-%d %H:%M"
+
+			return_json = map(lambda set: 
+				[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
+					aggregatedQuery
+			)
+	
+
+	return return_json
+
 def ajaxPlot(request):
 	if request.method == 'GET':
 		try:
 			timeFormat = ""
 			timeRange = request.GET.get("timeRange", "daily")
-
 			if timeRange == "daily":
-					timeFormat = "%d-%m-%Y"
+				timeFormat = "%d-%m-%Y"
 			else:
 				if timeRange == "hourly":
 					timeFormat = "%d-%m-%Y %H:%M"
@@ -91,15 +119,14 @@ def ajaxPlot(request):
 			else:
 				magnitude = 0.001
 
-
+			
 			print("HHHHHHHHHHHHHHHHHHHHHH")
 			print(datetime.strptime(dateTimeStart, timeFormat))
 			print(datetime.strptime(dateTimeEnd, timeFormat))
 			
-			return_json = map(lambda set: 
-				[set['moment'].strftime("%Y-%m-%d %H:%M"), set['voltage'] * set['current'] * magnitude], 
-				Consumption.objects.values('moment', 'current', 'voltage').filter(moment__range=[datetime.strptime(dateTimeStart, timeFormat), datetime.strptime(dateTimeEnd, timeFormat)])
-			)
+			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, timeFormat, magnitude)
+
+			print(return_json)
 			return HttpResponse(json.dumps({'plots': [[return_json]]}), content_type="application/json")
 		except:
 			return HttpResponse(json.dumps({'plots': [[[]]]}), content_type="application/json")

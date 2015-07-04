@@ -295,6 +295,8 @@ $(function(){
 				);
 
 				data = newPlotData;
+
+				console.log(data)
 				plot = $.jqplot('chart', validatePlotData(newPlotData[0]), $.extend(defaultPlotOptions, plotNewOptions));
 				plot.replot();
 		}
