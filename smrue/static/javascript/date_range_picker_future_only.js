@@ -2,7 +2,7 @@ $(function(){
 	$('input.date-range-picker').daterangepicker({
 		format: 'DD/MM/YYYY',
 		startDate: moment(),
-		endDate: moment().add(1, 'days'),
+		endDate: moment(),
 		minDate: moment(),
 		locale: {
 			applyLabel: 'Ok',

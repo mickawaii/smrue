@@ -10,9 +10,12 @@
 {% static "jquery-jqplot/jquery.jqplot.min.css" as jqplot_css %}
 {% static "css/application.css" as app_css %}
 {% static "bootstrap-daterangepicker/daterangepicker-bs3.css" as daterangepicker_css %}
+{% static "bootstrap-timepicker/css/bootstrap-timepicker.min.css" as datetimepicker_css %}
+
 <link href="{{daterangepicker_css}}" rel="stylesheet">
 <link href="{{jqplot_css}}" rel="stylesheet">
 <link href="{{app_css}}" rel="stylesheet">
+<link href="{{datetimepicker_css}}" rel="stylesheet">
 <!-- <link href="{{loading_gif}}" rel="image"> -->
 {% endblock %}
 
@@ -29,6 +32,9 @@
 {% static "bootstrap-daterangepicker/daterangepicker.js" as daterangepicker_js %}
 {% static "javascript/date_time_range_picker_past_only.js" as date_time_range_picker_js %}
 {% static "javascript/date_range_picker_past_only.js" as date_range_picker_js %}
+{% static "bootstrap-timepicker/js/bootstrap-timepicker.js" as timepicker_js %}
+{% static "javascript/time_picker_time_only.js" as time_picker_js %}
+
 <script src="{{moment_js}}"></script>
 <script src="{{jqplot_js}}"></script>
 <script src="{{jqplot_highlighter_js}}"></script>
@@ -39,6 +45,8 @@
 <script src="{{daterangepicker_js}}"></script>
 <script src="{{date_time_range_picker_js}}"></script>
 <script src="{{date_range_picker_js}}"></script>
+<script src="{{timepicker_js}}"></script>
+<script src="{{time_picker_js}}"></script>
 {% endblock %}
 
 {% block content %}
@@ -54,7 +62,10 @@
   <div class="row">
     <div class="col-sm-3">
       Filtro <br/>
-      <label>Data (por hora): </label><input class="date-time-range-picker form-control"/>
+      <label>Data (por hora): </label><input class="single-date-range-picker form-control"/>
+      de <input class="time-picker from-time"> a <input class="time-picker to-time">
+      <button class="hourly-plot">Faz o grafico pra mim</button>
+
       <label>Data (por dia): </label><input class="date-range-picker form-control"/>
 
       <button class="integrate">Integrate Plot</button>

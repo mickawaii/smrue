@@ -33,17 +33,17 @@ def importCSV(request):
 		# if form.is_valid(): # All validation rules pass
 		csv_imported = request.FILES['csv']
 		csv_imported.open()
-		line = 0
+		lineNumber = 0
 		try:
-			csv_reader = unicodecsv.DictReader(csv_imported, lineterminator = '\n', delimiter=';', encoding='latin-1')
+			csv_reader = unicodecsv.DictReader(csv_imported, lineterminator = '\n', delimiter=';', encoding='UTF-8')
 			for line in csv_reader:
-				line += 1
+				lineNumber += 1
 				Consumption.new(line['moment'], line['current'], line['voltage'], line['equipment_id']).save()
 			url = reverse('consumption:graphic')
 			return HttpResponseRedirect(url)
 		except Exception, e:
 			url = reverse('consumption:graphic')
-			messages.error(request, 'Erro na linha %d do CSV', str(line))
+			messages.error(request, 'Erro na linha ' + str(lineNumber) + ' do CSV')
 			return HttpResponseRedirect(url)
 
 def exportCSV(request):
@@ -76,7 +76,7 @@ def ajaxPlot(request):
 					timeFormat = "%d-%m-%Y"
 			else:
 				if timeRange == "hourly":
-					timeFormat = "%d-%m-%Y %I:%M %p"
+					timeFormat = "%d-%m-%Y %H:%M"
 
 			print(timeFormat)
 

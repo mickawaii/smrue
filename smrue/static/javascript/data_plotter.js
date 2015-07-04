@@ -1,15 +1,54 @@
 $(function(){
 
-	var dateTimeInputSelector = "input.date-time-range-picker";
+	var dateTimeInputSelector = "input.single-date-range-picker";
 	var dateInputSelector = "input.date-range-picker";
 	var integrateButtonSelector = "button.integrate";
 	var unintegrateButtonSelector = "button.power";
+	var hourlyPlotButtonSelector = "button.hourly-plot";
+	var hourlyFromTimeSelector = "input.from-time";
+	var hourlyToTimeSelector = "input.to-time";
 	var unitSelecSelector =  "select.unit";
 	var unit = "W";
 	var valueIndex = 1;
 	var dateIndex = 0;
 	var data = null;
 	var plot;
+	var timeRange;
+	var datePickerOptions;
+	var dateTimePickerOptions;
+	var dailyTitle = 'Potência x Dia';
+	var hourlyTitle = 'Potência x Hora';
+	var xFormat;
+	var defaultPlotOptions = 	{
+									animate: true,
+									axesDefaults: {
+										min: null,
+       									max: null
+									},
+									animation: {
+										speed: 100
+									},
+									series:[
+										{
+											rendererOptions: {
+												// Speed up the animation a little bit.
+												// This is a number of milliseconds.  
+												// Default for bar series is 3000.  
+												animation: {
+													speed: 2000
+												},
+											}
+										}
+									],
+									highlighter: {
+										show: true,
+										sizeAdjust: 7.5
+									},
+									cursor: {
+										show: false
+									}
+					
+								};
 
 	var plotDataCopy = function(plotArray){
 		var copy = [];
@@ -36,7 +75,7 @@ $(function(){
 		return [[dataCopy]];
 	};
 
-	var initializePlot = function(){
+	var initialize = function(){
 
 		$(".loading-gif").show();
 		$("#chart").hide();
@@ -55,7 +94,7 @@ $(function(){
 
 				var newOptions = 
 					{
-						title: 'Título',
+						title: dailyTitle,
 						axes:{
 							xaxis:{
 								label: 'Data',
@@ -67,7 +106,7 @@ $(function(){
 							yaxis:{
 								label: 'Potência',
 								tickOptions:{
-									formatString:'W%.3f'
+									formatString: unit + '%.3f'
 								}
 							}
 						}
@@ -107,65 +146,93 @@ $(function(){
 			$(integrateButtonSelector).show();
 		});
 
+		$(hourlyPlotButtonSelector).click(function(){
+			var newOptions = 
+				{
+					title: hourlyTitle,
+					axes:{
+						xaxis:{
+							label: 'Horário',
+						},
+						yaxis:{
+							label: 'Potência',
+						}
+					}
+				};
+
+			xFormat = '%H:%M';
+
+			timeRange = "hourly";
+
+			getTimeRangeAndGetData(dateTimeInputSelector, hourlyFromTimeSelector, hourlyToTimeSelector, newOptions);
+		});
+
 	}();
 
-	var getDateRangeAndGetData = function(pickerSelector){
+	var getTimeRangeAndGetData = function(datePickerSelector, fromTimePickerSelector, toTimePickerSelector, newOptions){
+		var date = $(datePickerSelector).val().split("/").join("-");
+		var toTime = $(toTimePickerSelector).val();
+		var fromTime = $(fromTimePickerSelector).val();
+
+		changeDate(date + " " + fromTime, date + " " + toTime, newOptions, 5);
+		console.log(date + " " + fromTime)
+		console.log(date + " " + toTime)
+			
+	}
+
+	var getDateRangeAndGetData = function(pickerSelector, newOptions){
 		var dateRange = $(pickerSelector).val();
 		var dateStart = dateRange.split(" - ")[0].split("/").join("-")
 		var dateEnd = dateRange.split(" - ")[1] .split("/").join("-")
 
-		changeDate(1,dateStart,dateEnd,4,5);
+		changeDate(dateStart,dateEnd,newOptions,5);
 	}
 
-	$(dateTimeInputSelector).on("apply.daterangepicker", function(event, picker){
+	//Passou de ser aplicado quando o daterangepicker eh okzado para quando um botao eh apertado.
+	//comentado para futuras referencias
+	// $(dateTimeInputSelector).on("apply.daterangepicker", function(event, picker){
 
-		var newOptions = 
-			{
-				title: 'Título',
-				axes:{
-					xaxis:{
-						label: 'Data',
-						renderer:$.jqplot.DateAxisRenderer,
-						tickOptions:{
-							formatString:'%I:%M'
-						}
-					},
-					yaxis:{
-						label: 'Potência',
-						tickOptions:{
-							formatString:'W%.2f'
-						}
-					}
-				}
-			};
+	// 	var newOptions = 
+	// 		{
+	// 			title: hourlyTitle,
+	// 			axes:{
+	// 				xaxis:{
+	// 					label: 'Horário',
+	// 				},
+	// 				yaxis:{
+	// 					label: 'Potência',
+	// 				}
+	// 			}
+	// 		};
 
-		getDateRangeAndGetData(dateTimeInputSelector);
+	// 	xFormat = '%H:%M';
+
+	// 	timeRange = "hourly";
+
+	// 	getDateRangeAndGetData(dateTimeInputSelector, newOptions);
 		
-	});
+	// });
 
 	$(dateInputSelector).on("apply.daterangepicker", function(event, picker){
 
 		var newOptions = 
 			{
-				title: 'Título',
+				title: dailyTitle,
 				axes:{
 					xaxis:{
 						label: 'Data',
-						renderer:$.jqplot.DateAxisRenderer,
-						tickOptions:{
-							formatString:'%d-%m-%y'
-						}
 					},
 					yaxis:{
 						label: 'Potência',
-						tickOptions:{
-							formatString:'W%.2f'
-						}
 					}
 				}
 			};
-			
-		getDateRangeAndGetData(dateInputSelector);
+
+		xFormat = '%d-%m-%y';
+
+		timeRange = "daily";
+
+		getDateRangeAndGetData(dateInputSelector, newOptions);
 		
 	});
 
@@ -183,35 +250,10 @@ $(function(){
 		}
 	};
 
-	var defaultPlotOptions = {
-					animate: true,
-					animation: {
-						speed: 100
-					},
-					series:[
-						{
-							rendererOptions: {
-								// Speed up the animation a little bit.
-								// This is a number of milliseconds.  
-								// Default for bar series is 3000.  
-								animation: {
-									speed: 2000
-								},
-							}
-						}
-					],
-					highlighter: {
-						show: true,
-						sizeAdjust: 7.5
-					},
-					cursor: {
-						show: false
-					}
 	
-				};
 
 
-	var changeDate = function(yUnit, xStart, xEnd, plotNewOptions, extraData){
+	var changeDate = function(xStart, xEnd, plotNewOptions, extraData){
 		$("#chart").hide();
 		$(".loading-gif").show();
 
@@ -221,11 +263,11 @@ $(function(){
 			dataType: 'json',
 			data:
 				{
-					"yUnit": yUnit,
 					"xStart": xStart,
 					"xEnd": xEnd,
 					"extraData": extraData,
-					"unit": unit
+					"unit": unit,
+					"timeRange": timeRange
 				},
 			success: function (response) { 
 
@@ -233,12 +275,28 @@ $(function(){
 				$(".loading-gif").hide();
 				$("#chart").show();
 
-				var newOptions = {
-					data: newPlotData[0]
-				} 
+				var newOptions = $.extend(
+					plotNewOptions,
+					{
+						axes:{
+							xaxis:{
+								renderer:$.jqplot.DateAxisRenderer,
+								tickOptions:{
+									formatString: xFormat
+								}
+							},
+							yaxis:{
+								tickOptions:{
+									formatString: unit.toUpperCase() + '%.3f'
+								}
+							}
+						}
+					}
+				);
 
 				data = newPlotData;
-				plot.replot($.extend(defaultPlotOptions, newOptions));
+				plot = $.jqplot('chart', validatePlotData(newPlotData[0]), $.extend(defaultPlotOptions, plotNewOptions));
+				plot.replot();
 		}
 	});
 	
