@@ -1,9 +1,7 @@
 $(function(){
-  $('input.date-range-picker').daterangepicker({
-    format: 'DD/MM/YYYY',
-    endDate: moment().add(1, 'days'),
-    maxDate: moment(),
-    locale: {
+
+  var localeOptions =
+    {
       applyLabel: 'Ok',
       cancelLabel: 'Cancelar',
       fromLabel: 'De',
@@ -12,10 +10,32 @@ $(function(){
       daysOfWeek: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex','Sab'],
       monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
       firstDay: 1
-    },
+    };
+
+  $('input.date-range-picker').daterangepicker({
+    format: 'DD/MM/YYYY',
+    showDropdowns: true,
+    endDate: moment(),
+    maxDate: moment(),
+    locale: localeOptions,
     ranges: {
       '30 dias': [moment(), moment().add(30, 'days')],
-      'Até o fim do mês': [moment(), moment().endOf('month')]
+      'Até o fim do mês': [moment(), moment().endOf('month')],
+      "Mês Atual": [moment().startOf("month"), moment().endOf('month')]
+    }
+  })
+
+  $('input.single-date-range-picker').daterangepicker({
+    singleDatePicker: true,
+    showDropdowns: true,
+    format: 'DD/MM/YYYY',
+    endDate: moment(),
+    maxDate: moment(),
+    locale: localeOptions,
+    ranges: {
+      '30 dias': [moment(), moment().add(30, 'days')],
+      'Até o fim do mês': [moment(), moment().endOf('month')],
+      "Mês Atual": [moment().startOf("month"), moment().endOf('month')]
     }
   })
 

@@ -1,3 +1,5 @@
+from django.db.models import Avg
+
 from django.shortcuts import render
 from django.conf import settings
 from django.views.generic.base import View, TemplateView
@@ -33,17 +35,17 @@ def importCSV(request):
 		# if form.is_valid(): # All validation rules pass
 		csv_imported = request.FILES['csv']
 		csv_imported.open()
-		line = 0
+		lineNumber = 0
 		try:
-			csv_reader = unicodecsv.DictReader(csv_imported, lineterminator = '\n', delimiter=';', encoding='latin-1')
+			csv_reader = unicodecsv.DictReader(csv_imported, lineterminator = '\n', delimiter=';', encoding='UTF-8')
 			for line in csv_reader:
-				line += 1
+				lineNumber += 1
 				Consumption.new(line['moment'], line['current'], line['voltage'], line['equipment_id']).save()
 			url = reverse('consumption:graphic')
 			return HttpResponseRedirect(url)
 		except Exception, e:
 			url = reverse('consumption:graphic')
-			messages.error(request, 'Erro na linha %d do CSV', str(line))
+			messages.error(request, 'Erro na linha ' + str(lineNumber) + ' do CSV')
 			return HttpResponseRedirect(url)
 
 def exportCSV(request):
@@ -66,18 +68,65 @@ def exportCSV(request):
 				}
 			)
 
+def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, magnitude):
+	aggregatedQuery= None
+	dateFormat = ""
+	return_json = None	
+
+	if timeRange == "daily":
+		aggregatedQuery = Consumption.objects.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lte=datetime.strptime(dateTimeEnd, dateTimeFormat) + timedelta(hours=23, minutes=59, seconds=59)).extra({'moment': "date(moment)"}).values('moment').annotate(current=Avg('current'), voltage=Avg('voltage'))
+		dateFormat = "%Y-%m-%d"
+
+		return_json = map(lambda set: 
+			[set['moment'], set['voltage'] * set['current']], 
+				aggregatedQuery
+		)
+		
+	else:
+		if timeRange == "hourly":
+			aggregatedQuery = Consumption.objects.values('moment', 'current', 'voltage').filter(moment__range=[datetime.strptime(dateTimeStart, dateTimeFormat), datetime.strptime(dateTimeEnd, dateTimeFormat)])
+			dateFormat = "%Y-%m-%d %H:%M"
+
+			return_json = map(lambda set: 
+				[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
+					aggregatedQuery
+			)
+	
+
+	return return_json
+
 def ajaxPlot(request):
 	if request.method == 'GET':
 		try:
-			timeFormat = "%d-%m-%Y"
+			timeFormat = ""
+			timeRange = request.GET.get("timeRange", "daily")
+			if timeRange == "daily":
+				timeFormat = "%d-%m-%Y"
+			else:
+				if timeRange == "hourly":
+					timeFormat = "%d-%m-%Y %H:%M"
+
+			print(timeFormat)
 
 			dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
 			dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
+			print(dateTimeEnd)
+			unit = request.GET.get("unit", Equipment.MEASUREMENT_UNITS[0][0])
+
+			magnitude = 1
+			if unit == Equipment.MEASUREMENT_UNITS[0][0] or unit == Equipment.MEASUREMENT_UNITS[0][1]:
+				magnitude = 1
+			else:
+				magnitude = 0.001
+
 			
-			return_json = map(lambda set: 
-				[set['moment'].strftime("%Y-%m-%d %H:%M:%S"), set['voltage'] * set['current']], 
-				Consumption.objects.values('moment', 'current', 'voltage').filter(moment__range=[datetime.strptime(dateTimeStart, timeFormat), datetime.strptime(dateTimeEnd, timeFormat)])
-			)
+			print("HHHHHHHHHHHHHHHHHHHHHH")
+			print(datetime.strptime(dateTimeStart, timeFormat))
+			print(datetime.strptime(dateTimeEnd, timeFormat))
+			
+			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, timeFormat, magnitude)
+
+			print(return_json)
 			return HttpResponse(json.dumps({'plots': [[return_json]]}), content_type="application/json")
 		except:
 			return HttpResponse(json.dumps({'plots': [[[]]]}), content_type="application/json")
