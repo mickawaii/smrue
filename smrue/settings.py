@@ -98,6 +98,13 @@ STATICFILES_DIRS = (
 
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = 'melhortcc2015@gmail.com'
+EMAIL_HOST_PASSWORD = 'henriquemi'
+DEFAULT_FROM_EMAIL = 'melhortcc2015@gmail.com'
+EMAIL_PORT = 587
+
 if 'BASE_IRI' in os.environ:
 
 	DEBUG = TEMPLATE_DEBUG = False

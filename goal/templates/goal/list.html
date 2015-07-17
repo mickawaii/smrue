@@ -13,15 +13,19 @@
 {% endblock %}
 
 {% block table_content %}
-<thead>
-  <tr>
-    <th>Nome</th>
-    <th>Gasto Relativo</th>
-    <th>Começo</th>
-    <th>Fim</th>
-    <th>Ações</th>
-  </tr>
-</thead>
+  {% if goals %}
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Gasto Relativo</th>
+        <th>Começo</th>
+        <th>Fim</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+  {% else %}
+    <tr><td>Não há metas cadastradas.</td></tr>
+  {% endif %}
 
 <tbody>
 {% for item in goals %}
@@ -43,7 +47,6 @@
       </a>
     </td>
   </tr>
-
 {% endfor %}
 </tbody>
 {% endblock %}

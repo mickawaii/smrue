@@ -62,7 +62,7 @@
 
           <ul class="nav navbar-nav navbar-right">
             {% if user.is_authenticated %}
-              <p class="navbar-text">Olá, {{user.username}}</p>
+              <p class="navbar-text">Olá, <a href="{% url 'configuration:edit_user' %}">{{user.username}}</a></p>
               <li><a href="{% url 'logout' %}">Logout</a></li>
             {% else %}
               <li><a href="{% url 'login' %}">Login</a></li>

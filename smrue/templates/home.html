@@ -35,8 +35,8 @@
 		<div class="jumbotron">
 			<h1>Bem vindo!</h1>
 			<p>Este é o seu sistema de monitoramento residencial de uso de energia!</p>
-			{% if not current_user %}
-				<p><a class="btn btn-primary btn-lg" <a href="{% url 'configuration:user' %}" role="button">Clique aqui para começar</a></p>
+			{% if no_users %}
+				<p><a class="btn btn-primary btn-lg" <a href="{% url 'configuration:create_user' %}" role="button">Clique aqui para começar</a></p>
 			{% endif %}
 		</div>
 

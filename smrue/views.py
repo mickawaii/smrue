@@ -7,6 +7,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http.response import HttpResponse
+from django.contrib.auth.models import User
 from forms import LoginForm
 
 from django.contrib import messages
@@ -20,6 +21,8 @@ class HomeView(TemplateView):
 		context = super(HomeView, self).get_context_data(**kwargs)
 
 		context['page_title'] = 'SMRUE'
+
+		context['no_users'] = User.objects.filter(is_superuser=False).count() == 0
 
 		context['current_user'] = self.request.user.username
 
@@ -49,8 +52,12 @@ class LoginView(FormView):
 
 		context['form_title'] = 'Login'
 
-		context['form_button'] = 'Fazer Login'
-		
+		context['form_button'] = 'Entrar'
+
+		context['form_button_class'] = "primary"
+
+		context['no_users'] = User.objects.filter(is_superuser=False).count() == 0
+
 		context['editable'] = True
 		
 		context['action_link'] = reverse("login")

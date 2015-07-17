@@ -6,29 +6,38 @@
     {% for message in messages %}
 	    <div class="alert {% if message.tags %}alert-{{message.tags}}{% endif %} {% if 'error' in message.tags %}alert-danger{% endif %}" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>{{ message }}</div>
     {% endfor %}
+    <br>
 	{% endif %}
 
-	{% for attr in form %}
-		{% if attr.is_hidden %}
-			{{attr}}
-		{% else %}
-			<div class="form-group">
-				<label class="col-sm-2 control-label">{{attr.label}}</label>
-				<div class="col-sm-10">
+	<div class="row">
+		<div class="col-sm-6">
+			{% for attr in form %}
+				{% if attr.is_hidden %}
 					{{attr}}
-				</div>
-			</div>
-		{% endif %}
+				{% else %}
+					<div class="form-group {% if attr.errors %}has-error has-feedback{% endif %}">
+						<label class="col-sm-4 control-label">{{attr.label}}</label>
+						<div class="col-sm-8">
+							{{attr}}
+							{% if attr.errors %}
+								<span class="glyphicon glyphicon-remove form-control-feedback"></span>
+								<span class="help-block">{{attr.errors.as_text}}</span>
+							{% endif %}
+						</div>
+					</div>
+				{% endif %}
+			{% endfor %}
+		</div>
 
-		{% if attr.errors %}
-		<div class="col-sm-offset-2 col-sm-10 alert alert-danger" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>{{attr.errors.as_text}}</div>
-		{% endif %}
+		<div class="col-sm-6 text-center">
+			{% if no_users %}
+				<p>Você ainda não possui cadastro.</p>
+				<a href="{% url 'configuration:create_user' %}" class="btn btn-info">Cadastrar</a>
+			{% else %}
+				<p>Esqueceu a senha?</p>
+				<a href="{% url 'configuration:recover_password' %}" class="btn btn-warning">Esqueci a minha senha</a>
+			{% endif %}				
+		</div>
+	</div>
 
-		<br/>
-	{% endfor %}
-
-{% endblock %}
-
-{% block buttons %}
-	<a href="{% url 'configuration:user' %}" class="btn btn-default">Registrar</a>
 {% endblock %}
