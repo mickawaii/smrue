@@ -1,10 +1,16 @@
 $(function(){
 
-	var dateTimeInputSelector = "input.single-date-range-picker";
+	var dateTimeInputSelector = "input.date-time-range-picker";
 	var dateInputSelector = "input.date-range-picker";
+	var monthInputSelector = "input.year-month-range-picker-past";
+
 	var integrateButtonSelector = "button.integrate";
 	var unintegrateButtonSelector = "button.power";
+
 	var hourlyPlotButtonSelector = "button.hourly-plot";
+	var dailyPlotButtonSelector = "button.daily-plot";
+	var monthlyPlotButtonSelector = "button.monthly-plot";
+
 	var hourlyFromTimeSelector = "input.from-time";
 	var hourlyToTimeSelector = "input.to-time";
 	var unitSelecSelector =  "select.unit";
@@ -18,6 +24,8 @@ $(function(){
 	var dateTimePickerOptions;
 	var dailyTitle = 'Potência x Dia';
 	var hourlyTitle = 'Potência x Hora';
+	var monthlyTitle = 'Potência x Mes';
+	
 	var xFormat;
 	var defaultPlotOptions = 	{
 									animate: true,
@@ -167,16 +175,56 @@ $(function(){
 			getTimeRangeAndGetData(dateTimeInputSelector, hourlyFromTimeSelector, hourlyToTimeSelector, newOptions);
 		});
 
+		$(dailyPlotButtonSelector).click(function(){
+			var newOptions = 
+			{
+				title: dailyTitle,
+				axes:{
+					xaxis:{
+						label: 'Data',
+					},
+					yaxis:{
+						label: 'Potência',
+					}
+				}
+			};
+
+			xFormat = '%d-%m-%y';
+
+			timeRange = "daily";
+
+			getDateRangeAndGetData(dateInputSelector, newOptions);
+		});
+
+		$(monthlyPlotButtonSelector).click(function(){
+			var newOptions = 
+			{
+				title: monthlyTitle,
+				axes:{
+					xaxis:{
+						label: 'Data',
+					},
+					yaxis:{
+						label: 'Potência',
+					}
+				}
+			};
+
+			xFormat = '%m-%y';
+
+			timeRange = "monthly";
+
+			getDateRangeAndGetData(monthInputSelector, newOptions);
+		});
+
 	}();
 
 	var getTimeRangeAndGetData = function(datePickerSelector, fromTimePickerSelector, toTimePickerSelector, newOptions){
-		var date = $(datePickerSelector).val().split("/").join("-");
-		var toTime = $(toTimePickerSelector).val();
-		var fromTime = $(fromTimePickerSelector).val();
+		var dateRange = $(datePickerSelector).val();
+		var dateStart = dateRange.split(" - ")[0].split("/").join("-")
+		var dateEnd = dateRange.split(" - ")[1] .split("/").join("-")
 
-		changeDate(date + " " + fromTime, date + " " + toTime, newOptions, 5);
-		console.log(date + " " + fromTime)
-		console.log(date + " " + toTime)
+		changeDate(dateStart,dateEnd,newOptions,5);
 			
 	}
 
@@ -212,29 +260,6 @@ $(function(){
 	// 	getDateRangeAndGetData(dateTimeInputSelector, newOptions);
 		
 	// });
-
-	$(dateInputSelector).on("apply.daterangepicker", function(event, picker){
-
-		var newOptions = 
-			{
-				title: dailyTitle,
-				axes:{
-					xaxis:{
-						label: 'Data',
-					},
-					yaxis:{
-						label: 'Potência',
-					}
-				}
-			};
-
-		xFormat = '%d-%m-%y';
-
-		timeRange = "daily";
-
-		getDateRangeAndGetData(dateInputSelector, newOptions);
-		
-	});
 
 	var validatePlotData = function(plotsData){
 		var blankPlotData = [[[]]];
