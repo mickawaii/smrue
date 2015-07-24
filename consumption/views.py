@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.db.models import Avg
 
 from django.shortcuts import render
@@ -17,6 +18,9 @@ from datetime import datetime, timedelta
 import unicodecsv
 import csv
 import json
+from django.db import connection
+import calendar
+from django.db import transaction
 
 class GraphicView(TemplateView):
 	# form_class = UploadFileForm
@@ -27,6 +31,7 @@ class GraphicView(TemplateView):
 		context = super(GraphicView, self).get_context_data(**kwargs)
 
 		context["measurement_units"] = Equipment.MEASUREMENT_UNITS
+		context["months"] = ((1, "Janeiro"),(2, "Fevereiro"),(3, "Março"),(4, "Abril"),(5, "Maio"),(6, "Junho"),(7, "Julho"),(8, "Agosto"),(9, "Setembro"),(10, "Outubro"),(11, "Novembro"),(12, "Dezembro"))
 		return context
 
 def importCSV(request):
@@ -38,9 +43,10 @@ def importCSV(request):
 		lineNumber = 0
 		try:
 			csv_reader = unicodecsv.DictReader(csv_imported, lineterminator = '\n', delimiter=';', encoding='UTF-8')
-			for line in csv_reader:
-				lineNumber += 1
-				Consumption.new(line['moment'], line['current'], line['voltage'], line['equipment_id']).save()
+			with transaction.atomic():
+				for line in csv_reader:
+					lineNumber += 1
+					Consumption.new(line['moment'], line['current'], line['voltage'], line['equipment_id']).save()
 			url = reverse('consumption:graphic')
 			return HttpResponseRedirect(url)
 		except Exception, e:
@@ -69,30 +75,51 @@ def exportCSV(request):
 			)
 
 def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, magnitude):
+
+	def get_first_day(dt, d_years=0, d_months=0):
+		# d_years, d_months are "deltas" to apply to dt
+		y, m = dt.year + d_years, dt.month + d_months
+		a, m = divmod(m-1, 12)
+		return datetime(y+a, m+1, 1)
+
+	def get_last_day(dt):
+		return get_first_day(dt, 0, 1) + timedelta(-1)
+
 	aggregatedQuery= None
 	dateFormat = ""
 	return_json = None	
+
 
 	if timeRange == "daily":
 		aggregatedQuery = Consumption.objects.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lte=datetime.strptime(dateTimeEnd, dateTimeFormat) + timedelta(hours=23, minutes=59, seconds=59)).extra({'moment': "date(moment)"}).values('moment').annotate(current=Avg('current'), voltage=Avg('voltage'))
 		dateFormat = "%Y-%m-%d"
 
 		return_json = map(lambda set: 
-			[set['moment'], set['voltage'] * set['current']], 
+			[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
 				aggregatedQuery
 		)
 		
-	else:
-		if timeRange == "hourly":
-			aggregatedQuery = Consumption.objects.values('moment', 'current', 'voltage').filter(moment__range=[datetime.strptime(dateTimeStart, dateTimeFormat), datetime.strptime(dateTimeEnd, dateTimeFormat)])
-			dateFormat = "%Y-%m-%d %H:%M"
+	elif timeRange == "hourly":
+		aggregatedQuery = Consumption.objects.values('moment', 'current', 'voltage').filter(moment__range=[datetime.strptime(dateTimeStart, dateTimeFormat), datetime.strptime(dateTimeEnd, dateTimeFormat)])
+		dateFormat = "%Y-%m-%d %H:%M"
 
-			return_json = map(lambda set: 
-				[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
-					aggregatedQuery
-			)
+		return_json = map(lambda set: 
+			[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
+				aggregatedQuery
+		)
+
+	elif timeRange == "monthly":
+		import pdb; pdb.set_trace()
+		# truncate_date = connection.ops.date_trunc_sql('month', 'moment')
+		qs = Consumption.objects.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lte=get_last_day(datetime.strptime(dateTimeEnd, dateTimeFormat)))
+		aggregatedQuery = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month').annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('month', 'year', 'current_avg', 'voltage_avg')
+		dateFormat = "%Y-%m"
+
+		return_json = map(lambda set: 
+			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), set['voltage_avg'] * set['current_avg']], 
+				aggregatedQuery
+		)
 	
-
 	return return_json
 
 def ajaxPlot(request):
@@ -102,15 +129,17 @@ def ajaxPlot(request):
 			timeRange = request.GET.get("timeRange", "daily")
 			if timeRange == "daily":
 				timeFormat = "%d-%m-%Y"
-			else:
-				if timeRange == "hourly":
-					timeFormat = "%d-%m-%Y %H:%M"
+			elif timeRange == "hourly":
+				timeFormat = "%d-%m-%Y %H:%M"
+			elif timeRange == "monthly":
+				timeFormat = "%m-%Y"
 
-			print(timeFormat)
+
+			# print(timeFormat)
 
 			dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
 			dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
-			print(dateTimeEnd)
+			# print(dateTimeEnd)
 			unit = request.GET.get("unit", Equipment.MEASUREMENT_UNITS[0][0])
 
 			magnitude = 1
@@ -118,15 +147,14 @@ def ajaxPlot(request):
 				magnitude = 1
 			else:
 				magnitude = 0.001
-
-			
-			print("HHHHHHHHHHHHHHHHHHHHHH")
-			print(datetime.strptime(dateTimeStart, timeFormat))
-			print(datetime.strptime(dateTimeEnd, timeFormat))
+						
+			# print("HHHHHHHHHHHHHHHHHHHHHH")
+			# print(datetime.strptime(dateTimeStart, timeFormat))
+			# print(datetime.strptime(dateTimeEnd, timeFormat))
 			
 			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, timeFormat, magnitude)
 
-			print(return_json)
+			# print(return_json)
 			return HttpResponse(json.dumps({'plots': [[return_json]]}), content_type="application/json")
 		except:
 			return HttpResponse(json.dumps({'plots': [[[]]]}), content_type="application/json")

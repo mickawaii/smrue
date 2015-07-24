@@ -13,6 +13,7 @@ import os
 import socket
 import dj_database_url
 from django.core.wsgi import get_wsgi_application
+from datetime import timedelta
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -46,6 +47,7 @@ INSTALLED_APPS = (
 	'sensor',
 	'aes_rate',
 	'configuration',
+	'tasks',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -65,11 +67,22 @@ WSGI_APPLICATION = 'smrue.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 
+# DATABASES = {
+# 	'default': {
+# 		'ENGINE': 'django.db.backends.sqlite3',
+# 		'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+# 	}
+# }
+
 DATABASES = {
-	'default': {
-		'ENGINE': 'django.db.backends.sqlite3',
-		'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-	}
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'df92jg90v64ufb',                      
+        'USER': 'kawmralupavplb',
+        'PASSWORD': 'LO9AMno_SHFuIM7IeSQGLajp2z',
+        'HOST': 'ec2-54-83-18-87.compute-1.amazonaws.com',
+        'PORT': '5432',
+    }
 }
 
 # Internationalization
@@ -103,3 +116,20 @@ if 'BASE_IRI' in os.environ:
 	DEBUG = TEMPLATE_DEBUG = False
 
 	DATABASES = {'default': dj_database_url.config(default='postgres://tkihlhiauawvvx:SlfzPvh1rai6YSp6_lmckX3KfQ@ec2-54-227-249-165.compute-1.amazonaws.com:5432/d312ostfbfevth')}
+
+#Celery configuration (tasks) - http://celery.readthedocs.org/en/latest/userguide/periodic-tasks.html
+CELERY_TIMEZONE = TIME_ZONE
+	#Toda vez que o timezone muda, rode:
+	# $ python manage.py shell
+	# >>> from djcelery.models import PeriodicTask
+	# >>> PeriodicTask.objects.update(last_run_at=None)
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERYBEAT_SCHEDULE = {
+    'add-every-30-days': {
+        'task': 'tasks.add',
+        'schedule': timedelta(seconds=30),
+        'args': (16, 16)
+    },
+}

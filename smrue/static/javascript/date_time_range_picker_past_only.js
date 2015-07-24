@@ -3,7 +3,6 @@ $(function(){
     endDate: moment(),
     maxDate: moment(),
     timePicker: true,
-    format: 'DD/MM/YYYY H:mm',
     timePickerIncrement: 60,
     timePicker12Hour: false,
     timePickerSeconds: false,
@@ -16,7 +15,8 @@ $(function(){
       customRangeLabel: 'Escolher',
       daysOfWeek: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex','Sab'],
       monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
-      firstDay: 1
+      firstDay: 1,
+      format: 'DD/MM/YYYY H:mm'
     },
     ranges: {
       '30 dias': [moment().subtract(30, 'days'), moment()],

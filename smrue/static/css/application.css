@@ -24,3 +24,15 @@ body {
   left: 50%;
   width: 100%;
 }
+
+.monthly-range-picker tr:nth-child(2){
+  display: none
+}
+
+.monthly-range-picker tbody {
+  display: none
+}
+
+.monthly-range-picker .input-mini, .glyphicon-calendar {
+  display: none
+}
