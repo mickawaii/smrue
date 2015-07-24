@@ -1,24 +1,24 @@
 # smrue
 
-pip freeze > requirements.txt
-pip install -r requirements.txt
+### Pip
+`pip freeze > requirements.txt`
+`pip install -r requirements.txt`
 
-git push heroku master
+### Heroku
+###### Restart heroku
+`heroku restart`
 
-Restart heroku
-heroku restart
+###### Scale dinos
+`heroku ps:scale web=1`
 
-Scale dinos
-heroku ps:scale web=1
+###### Check state
+`heroku ps`
 
-Check state
-heroku ps
+###### See logs
+`heroku logs -t -a smrue-mi`
 
-See logs
-heroku logs -t -a smrue-mi
+###### Django-shell
+`heroku run python manage.py shell`
 
-Django-shell
-heroku run python manage.py shell
-
-Run migrations
-heroku run python manage.py migrate
+###### Run migrations
+`heroku run python manage.py migrate`
