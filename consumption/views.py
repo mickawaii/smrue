@@ -20,6 +20,7 @@ import csv
 import json
 from django.db import connection
 import calendar
+from django.db import transaction
 
 class GraphicView(TemplateView):
 	# form_class = UploadFileForm
@@ -42,9 +43,10 @@ def importCSV(request):
 		lineNumber = 0
 		try:
 			csv_reader = unicodecsv.DictReader(csv_imported, lineterminator = '\n', delimiter=';', encoding='UTF-8')
-			for line in csv_reader:
-				lineNumber += 1
-				Consumption.new(line['moment'], line['current'], line['voltage'], line['equipment_id']).save()
+			with transaction.atomic():
+				for line in csv_reader:
+					lineNumber += 1
+					Consumption.new(line['moment'], line['current'], line['voltage'], line['equipment_id']).save()
 			url = reverse('consumption:graphic')
 			return HttpResponseRedirect(url)
 		except Exception, e:
@@ -86,14 +88,14 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, 
 	aggregatedQuery= None
 	dateFormat = ""
 	return_json = None	
-	import pdb; pdb.set_trace()
+
 
 	if timeRange == "daily":
 		aggregatedQuery = Consumption.objects.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lte=datetime.strptime(dateTimeEnd, dateTimeFormat) + timedelta(hours=23, minutes=59, seconds=59)).extra({'moment': "date(moment)"}).values('moment').annotate(current=Avg('current'), voltage=Avg('voltage'))
 		dateFormat = "%Y-%m-%d"
 
 		return_json = map(lambda set: 
-			[set['moment'], set['voltage'] * set['current']], 
+			[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
 				aggregatedQuery
 		)
 		
@@ -107,15 +109,14 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, 
 		)
 
 	elif timeRange == "monthly":
-	
-		truncate_date = connection.ops.date_trunc_sql('month', 'moment')
-		qs = Consumption.objects.extra({'moment':truncate_date})
-
-		aggregatedQuery = qs.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lte=get_last_day(datetime.strptime(dateTimeEnd, dateTimeFormat))).values('moment', 'current', 'voltage').annotate(current=Avg('current'), voltage=Avg('voltage'))
+		import pdb; pdb.set_trace()
+		# truncate_date = connection.ops.date_trunc_sql('month', 'moment')
+		qs = Consumption.objects.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lte=get_last_day(datetime.strptime(dateTimeEnd, dateTimeFormat)))
+		aggregatedQuery = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month').annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('month', 'year', 'current_avg', 'voltage_avg')
 		dateFormat = "%Y-%m"
 
 		return_json = map(lambda set: 
-			[set['moment'], set['voltage'] * set['current']], 
+			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), set['voltage_avg'] * set['current_avg']], 
 				aggregatedQuery
 		)
 	
@@ -124,8 +125,6 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, 
 def ajaxPlot(request):
 	if request.method == 'GET':
 		try:
-			import pdb; pdb.set_trace()
-
 			timeFormat = ""
 			timeRange = request.GET.get("timeRange", "daily")
 			if timeRange == "daily":
@@ -136,11 +135,11 @@ def ajaxPlot(request):
 				timeFormat = "%m-%Y"
 
 
-			print(timeFormat)
+			# print(timeFormat)
 
 			dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
 			dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
-			print(dateTimeEnd)
+			# print(dateTimeEnd)
 			unit = request.GET.get("unit", Equipment.MEASUREMENT_UNITS[0][0])
 
 			magnitude = 1
@@ -149,13 +148,13 @@ def ajaxPlot(request):
 			else:
 				magnitude = 0.001
 						
-			print("HHHHHHHHHHHHHHHHHHHHHH")
-			print(datetime.strptime(dateTimeStart, timeFormat))
-			print(datetime.strptime(dateTimeEnd, timeFormat))
+			# print("HHHHHHHHHHHHHHHHHHHHHH")
+			# print(datetime.strptime(dateTimeStart, timeFormat))
+			# print(datetime.strptime(dateTimeEnd, timeFormat))
 			
 			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, timeFormat, magnitude)
 
-			print(return_json)
+			# print(return_json)
 			return HttpResponse(json.dumps({'plots': [[return_json]]}), content_type="application/json")
 		except:
 			return HttpResponse(json.dumps({'plots': [[[]]]}), content_type="application/json")
