@@ -1,0 +1,26 @@
+{% extends "base_list.html" %}
+
+{% load static from staticfiles %}
+
+{% block css %}
+<style type="text/css">
+</style>
+{% endblock %}
+
+{% block js %}
+{% endblock %}
+
+{% block list_filters %}
+	<a href="{% url 'aes_rate:refresh_rates' %}" class="btn btn-primary">Refresca!!!</a>
+
+{% endblock %}
+
+{% block table_content %}
+<tbody>
+	<tr>
+		<td>
+			Tralalala
+		</td>
+	</tr>
+</tbody>
+{% endblock %}
