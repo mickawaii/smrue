@@ -1,4 +1,4 @@
-from celery import task
+# from celery import task
 from aes_rate.models import AESRate
 
 # @task()
