@@ -141,6 +141,6 @@ CELERYBEAT_SCHEDULE = {
     'add-every-10-days': {
         'task': 'smrue.tasks.add',
         'schedule': timedelta(days=1),
-        'args': (16, 16)
+        'args': ()
     },
 }

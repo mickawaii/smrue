@@ -34,11 +34,6 @@ class IndexView(ListView):
 
 		return context
 
-	def get_queryset(self):
-		queryset = Sensor.objects.all()
-
-		return queryset
-
 	# @method_decorator(login_required(login_url=reverse_lazy('google_login:login_page')))
 	def dispatch(self, *args, **kwargs):
 		return super(IndexView, self).dispatch(*args, **kwargs)

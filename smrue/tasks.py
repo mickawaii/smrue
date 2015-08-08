@@ -1,6 +1,6 @@
 from celery import task
+from aes_rate.models import AESRate
 
 @task()
-def add(x, y):
-  print(x + y)
-  return x + y
+def add():
+  AESRate.update_info()

@@ -37,11 +37,6 @@ class IndexView(ListView):
 
 		return context
 
-	def get_queryset(self):
-		queryset = Goal.objects.all()
-
-		return queryset
-
 	def dispatch(self, *args, **kwargs):
 		return super(IndexView, self).dispatch(*args, **kwargs)
 
@@ -79,12 +74,13 @@ class CreateView(CreateView):
 
 class DeleteView(DeleteView):
 	model = Goal
-	success_url = reverse_lazy("goal:list")
 
+	success_url = reverse_lazy("goal:list")
 
 class UpdateView(UpdateView):
 	model = Goal
 	form_class = GoalForm
+	pk_url_kwarg = 'pk'	
 	template_name = 'goal/create_form.html'
 	success_url = reverse_lazy("goal:list") # Url para redirecionamento
 
@@ -104,13 +100,7 @@ class UpdateView(UpdateView):
 
 		context['back_link'] = reverse("goal:list")
 
-
-
 		return context
-
-	def get_object(self, queryset=None):
-		goal = Goal.objects.get(id=self.kwargs['pk'])
-		return goal
 
 	def dispatch(self, *args, **kwargs):
 		return super(UpdateView, self).dispatch(*args, **kwargs)
