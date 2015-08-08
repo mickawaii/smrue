@@ -2,6 +2,7 @@ $(function(){
 
   var localeOptions =
     {
+      format: 'DD/MM/YYYY',
       applyLabel: 'Ok',
       cancelLabel: 'Cancelar',
       fromLabel: 'De',
@@ -13,7 +14,6 @@ $(function(){
     };
 
   $('input.date-range-picker').daterangepicker({
-    format: 'DD/MM/YYYY',
     showDropdowns: true,
     endDate: moment(),
     maxDate: moment(),
@@ -28,7 +28,6 @@ $(function(){
   $('input.single-date-range-picker').daterangepicker({
     singleDatePicker: true,
     showDropdowns: true,
-    format: 'DD/MM/YYYY',
     endDate: moment(),
     maxDate: moment(),
     locale: localeOptions,
