@@ -31,7 +31,7 @@ class IndexView(ListView):
 
 		context['list_title'] = 'AES Eletropaulo'
 
-		context['last_update'] = AESRate.objects.latest("date").date
+		context['last_update'] = AESRate.objects.latest("date").date or None
 
 		context['aes_link'] = AESRate.TAX_LINK
 
