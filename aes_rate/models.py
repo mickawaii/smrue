@@ -85,6 +85,6 @@ class AESRate(models.Model):
 						aes_rate["te"] = float(group.findNext("td").findNext("td").text.replace(",","."))
 
 					if aes_rate.get("name", None):
-						AESRate.objects.update_or_create(name=aes_rate["name"], range_start=aes_rate["range_start"], range_end=aes_rate["range_end"], defaults=aes_rate)
+						AESRate.objects.update_or_create(name=aes_rate["name"], range_start=aes_rate["range_start"], range_end=aes_rate["range_end"], tusd=aes_rate["tusd"], te=aes_rate["te"], defaults=aes_rate)
 					
 				group = group.findNext(attrs={"class":"bandeira-esquerda"})
