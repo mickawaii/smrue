@@ -18,7 +18,7 @@
 	<div class="form-group">
 		<a href="{% url 'aes_rate:refresh_rates' %}" class="btn btn-info"><i class="glyphicon glyphicon-refresh"></i></a>
 		<span class="help-text">
-			{% if latest_update %}Última atualização: {{last_update|date:"d/m/Y"}}
+			{% if last_update %}Última atualização: {{last_update|date:"d/m/Y"}}
 			{% else %}Clique para atualizar
 			{% endif %}</span>
 	</div>

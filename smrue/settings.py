@@ -124,7 +124,7 @@ EMAIL_PORT = 587
 
 if 'BASE_IRI' in os.environ:
 
-	DEBUG = TEMPLATE_DEBUG = True
+	DEBUG = TEMPLATE_DEBUG = False
 
 	DATABASES = {'default': dj_database_url.config(default='postgres://tkihlhiauawvvx:SlfzPvh1rai6YSp6_lmckX3KfQ@ec2-54-227-249-165.compute-1.amazonaws.com:5432/d312ostfbfevth')}
 
