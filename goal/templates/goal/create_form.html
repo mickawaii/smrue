@@ -3,6 +3,8 @@
 
 {% block css %}
 {% static "bootstrap-daterangepicker/daterangepicker-bs3.css" as daterangepicker_css %}
+{% static "bootstrap-datepicker/css/bootstrap-datepicker.min.css" as datepicker_css %}
+<link href="{{datepicker_css}}" rel="stylesheet">
 <link href="{{daterangepicker_css}}" rel="stylesheet">
 <style type="text/css">
 .form-group ul{
@@ -43,15 +45,17 @@ ul.ui-autocomplete {
 
 {% block js %}
 {% static "jquery-ui/jquery-ui.min.js" as jquery_ui %}
-{% static "bootstrap-daterangepicker/moment.min.js" as moment_js %}
+{% static "bootstrap-datetimepicker/moment.min.js" as moment_js %}
 {% static "bootstrap-daterangepicker/daterangepicker.js" as daterangepicker_js %}
+{% static "bootstrap-datepicker/js/bootstrap-datepicker.min.js" as datepicker_js %}
 {% static "jquery-mask/jquery.mask.min.js" as jquery_mask %}
-{% static "javascript/date_range_picker_future_only.js" as date_range_picker %}
+{% static "javascript/year_month_picker_future_only.js" as year_month_picker %}
 <script src="{{jquery_ui}}"></script>
 <script src="{{moment_js}}"></script>
 <script src="{{daterangepicker_js}}"></script>
+<script src="{{datepicker_js}}"></script>
 <script src="{{jquery_mask}}"></script>
-<script src="{{date_range_picker}}"></script>
+<script src="{{year_month_picker}}"></script>
 {% endblock %}
 
 {% block form_body %}

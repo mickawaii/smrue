@@ -12,12 +12,14 @@
 {% static "bootstrap-daterangepicker/daterangepicker.css" as daterangepicker_css %}
 {% static "bootstrap-timepicker/css/bootstrap-timepicker.min.css" as timepicker_css %}
 {% static "bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css" as datetimepicker_css %}
+{% static "bootstrap-datepicker/css/bootstrap-datepicker.min.css" as datepicker_css %}
 
 <link href="{{daterangepicker_css}}" rel="stylesheet">
 <link href="{{jqplot_css}}" rel="stylesheet">
 <link href="{{app_css}}" rel="stylesheet">
 <link href="{{timepicker_css}}" rel="stylesheet">
 <link href="{{datetimepicker_css}}" rel="stylesheet">
+<link href="{{datepicker_css}}" rel="stylesheet">
 <!-- <link href="{{loading_gif}}" rel="image"> -->
 {% endblock %}
 
@@ -37,8 +39,8 @@
 {% static "bootstrap-timepicker/js/bootstrap-timepicker.js" as timepicker_js %}
 {% static "bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js" as datetimepicker_js %}
 {% static "javascript/time_picker_time_only.js" as time_picker_js %}
+{% static "bootstrap-datepicker/js/bootstrap-datepicker.min.js" as date_picker_js %}
 {% static "javascript/year_month_range_picker_past_only.js" as year_month_past_js %}
-
 
 <script src="{{moment_js}}"></script>
 <script src="{{jqplot_js}}"></script>
@@ -53,7 +55,9 @@
 <script src="{{timepicker_js}}"></script>
 <script src="{{datetimepicker_js}}"></script>
 <script src="{{time_picker_js}}"></script>
+<script src="{{date_picker_js}}"></script>
 <script src="{{year_month_past_js}}"></script>
+
 
 {% endblock %}
 
@@ -98,8 +102,14 @@
           <div class="col-sm-12">
             <!-- Filtro por mês -->
             <label>Data (por mês): </label>
-            <input class="year-month-range-picker-past"/>
+            <input class="year-month-range-past"/>
             <button class="monthly-plot">Faz o grafico pra mim (mês)</button>
+
+            <div class="year-month-range-picker-past">
+              <input type="text" class="input-small start"/>
+              <span class="add-on">to</span>
+              <input type="text" class="input-small end"/>
+            </div>
           </div>
         </div>
         <div role="tabpanel" class="tab-pane" id="settings">
