@@ -74,6 +74,7 @@ def exportCSV(request):
 				'equipment_id': consumption.equipment_id
 				}
 			)
+		return response
 
 def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, magnitude):
 
