@@ -2,7 +2,7 @@ $(function(){
 
 	var dateTimeInputSelector = "input.date-time-range-picker";
 	var dateInputSelector = "input.date-range-picker";
-	var monthInputSelector = "input.year-month-range-past";
+	var monthInputSelector = "input.year-month-range-picker-past";
 
 	var integrateButtonSelector = "button.integrate";
 	var unintegrateButtonSelector = "button.power";
@@ -132,7 +132,7 @@ $(function(){
 
 		$(integrateButtonSelector).click(function(){
 
-
+			console.log(data);
 			var integratedData = integrate(data);
 
 			var newOptions = {
