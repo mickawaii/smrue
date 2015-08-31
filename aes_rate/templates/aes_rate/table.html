@@ -31,6 +31,7 @@
 			<th>Intervalo</th>
 			<th>TUSD</th>
 			<th>TE</th>
+			<th>Válido a partir de</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -40,9 +41,15 @@
 				<td>{{item.range_display}}</td>
 				<td>{{item.tusd}}</td>
 				<td>{{item.te}}</td>
+				<td>{{item.valid_date|date:"d/m/Y"}}</td>
 			</tr>		
+		{% empty %}
+			<tr>
+				<td colspan=4>Nenhum item registrado</td>
+			</tr>
 		{% endfor %}
 	</tbody>
+
 {% endblock %}
 
 {% block modals %}

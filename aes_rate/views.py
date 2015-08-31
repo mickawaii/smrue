@@ -14,6 +14,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from aes_rate.models import AESRate
 from bs4 import BeautifulSoup
 from django.db import transaction
+from django.db.models import Max
 import urllib
 import re
 
@@ -36,6 +37,19 @@ class IndexView(ListView):
 		context['aes_link'] = AESRate.TAX_LINK
 
 		return context
+
+	def get_queryset(self):
+		queryset = super(IndexView, self).get_queryset()
+		latest_date = queryset.aggregate(max_date=Max("date"))["max_date"]
+
+		if latest_date:
+			year = latest_date.year
+			month = latest_date.month
+			day = latest_date.day
+
+			queryset = queryset.filter(date__year=year, date__month=month, date__day=day)
+
+		return queryset
 
 	def refresh_rates(self, request):
 		AESRate.update_info()

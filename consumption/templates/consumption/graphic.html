@@ -1,10 +1,5 @@
 {% extends "base.html" %}
 {% load static from staticfiles %}
-{% static "images/loading.gif" as loading_gif %}
-
-<script type="text/javascript" src="../plugins/jqplot.highlighter.min.js"></script>
-<script type="text/javascript" src="../plugins/jqplot.cursor.min.js"></script>
-<script type="text/javascript" src="../plugins/jqplot.dateAxisRenderer.min.js"></script>
 
 {% block css %}
 {% static "jquery-jqplot/jquery.jqplot.min.css" as jqplot_css %}
@@ -12,16 +7,16 @@
 {% static "bootstrap-daterangepicker/daterangepicker.css" as daterangepicker_css %}
 {% static "bootstrap-timepicker/css/bootstrap-timepicker.min.css" as timepicker_css %}
 {% static "bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css" as datetimepicker_css %}
+{% static "images/loading.gif" as loading_gif %}
 
 <link href="{{daterangepicker_css}}" rel="stylesheet">
 <link href="{{jqplot_css}}" rel="stylesheet">
 <link href="{{app_css}}" rel="stylesheet">
 <link href="{{timepicker_css}}" rel="stylesheet">
 <link href="{{datetimepicker_css}}" rel="stylesheet">
-<!-- <link href="{{loading_gif}}" rel="image"> -->
+<!-- <link href="{{loading_gif}}" rel="image"> -->  
 {% endblock %}
 
-<script type="text/javascript" src="../plugins/jqplot.barRenderer.min.js"></script>
 
 {% block js %}
 {% static "bootstrap-datetimepicker/moment.min.js" as moment_js %}
@@ -39,22 +34,20 @@
 {% static "javascript/time_picker_time_only.js" as time_picker_js %}
 {% static "javascript/year_month_range_picker_past_only.js" as year_month_past_js %}
 
-
-<script src="{{moment_js}}"></script>
-<script src="{{jqplot_js}}"></script>
-<script src="{{jqplot_highlighter_js}}"></script>
-<script src="{{jqplot_cursor_js}}"></script>
-<script src="{{jqplot_dateAxisRenderer_js}}"></script>
-<script src="{{jqplot_barRenderer_js}}"></script>
-<script src="{{data_plotter}}"></script>
-<script src="{{daterangepicker_js}}"></script>
-<script src="{{date_time_range_picker_js}}"></script>
-<script src="{{date_range_picker_js}}"></script>
-<script src="{{timepicker_js}}"></script>
-<script src="{{datetimepicker_js}}"></script>
-<script src="{{time_picker_js}}"></script>
-<script src="{{year_month_past_js}}"></script>
-
+<script type="text/javascript" src="{{moment_js}}"></script>
+<script type="text/javascript" src="{{jqplot_js}}"></script>
+<script type="text/javascript" src="{{jqplot_highlighter_js}}"></script>
+<script type="text/javascript" src="{{jqplot_cursor_js}}"></script>
+<script type="text/javascript" src="{{jqplot_dateAxisRenderer_js}}"></script>
+<script type="text/javascript" src="{{jqplot_barRenderer_js}}"></script>
+<script type="text/javascript" src="{{data_plotter}}"></script>
+<script type="text/javascript" src="{{daterangepicker_js}}"></script>
+<script type="text/javascript" src="{{date_time_range_picker_js}}"></script>
+<script type="text/javascript" src="{{date_range_picker_js}}"></script>
+<script type="text/javascript" src="{{timepicker_js}}"></script>
+<script type="text/javascript" src="{{datetimepicker_js}}"></script>
+<script type="text/javascript" src="{{time_picker_js}}"></script>
+<script type="text/javascript" src="{{year_month_past_js}}"></script>
 {% endblock %}
 
 {% block content %}
