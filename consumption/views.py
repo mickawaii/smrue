@@ -13,6 +13,7 @@ from django.contrib import messages
 from equipment.models import Equipment
 from consumption.models import Consumption
 from aes_rate.models import AESRate
+from goal.models import Goal
 
 from django.template import RequestContext
 from datetime import datetime, timedelta
@@ -83,6 +84,7 @@ def exportCSV(request):
 				'equipment_id': consumption.equipment_id
 				}
 			)
+		return response
 
 		return response
 
@@ -110,6 +112,7 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, 
 		)
 
 	elif timeRange == "monthly":
+		# import pdb; pdb.set_trace()
 		# truncate_date = connection.ops.date_trunc_sql('month', 'moment')
 		qs = Consumption.objects.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lte=get_last_day_of_month(datetime.strptime(dateTimeEnd, dateTimeFormat)))
 		aggregatedQuery = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month').annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('month', 'year', 'current_avg', 'voltage_avg')
@@ -119,6 +122,8 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, 
 			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), set['voltage_avg'] * set['current_avg']], 
 				aggregatedQuery
 		)
+
+
 	
 	return return_json
 
