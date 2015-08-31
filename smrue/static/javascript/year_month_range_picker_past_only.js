@@ -38,7 +38,7 @@ $(function(){
     showButtonPanel: true,
     format: 'mm/yyyy',
     minViewMode: 'months',
-    startDate: 'today'
+    endDate: 'today'
     
   }).on('changeDate', function() { 
       var date_range = $("input.year-month-range-past").val();
@@ -61,7 +61,7 @@ $(function(){
     showButtonPanel: true,
     format: 'mm/yyyy',
     minViewMode: 'months',
-    startDate: 'today'
+    endDate: 'today'
     
   }).on('changeDate', function() { 
       var date_range = $("input.year-month-range-past").val();
