@@ -90,13 +90,14 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, 
 	aggregatedQuery= None
 	dateFormat = ""
 	return_json = None	
+	mult = 0.001 if unit == Equipment.MEASUREMENT_UNITS[1][0] else 1
 
 	if timeRange == "daily":
 		aggregatedQuery = Consumption.objects.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lt=datetime.strptime(dateTimeEnd, dateTimeFormat) + timedelta(days=1)).extra({'moment': "date(moment)"}).values('moment').annotate(current=Avg('current'), voltage=Avg('voltage'))
 		dateFormat = "%Y-%m-%d"
 
 		return_json = map(lambda set: 
-			[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
+			[set['moment'].strftime(dateFormat), mult * set['voltage'] * set['current']], 
 				aggregatedQuery
 		)
 		
@@ -105,20 +106,19 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, 
 		dateFormat = "%Y-%m-%d %H:%M"
 
 		return_json = map(lambda set: 
-			[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
+			[set['moment'].strftime(dateFormat), mult * set['voltage'] * set['current']], 
 				aggregatedQuery
 		)
 
 	elif timeRange == "monthly":
 		# import pdb; pdb.set_trace()
 		# truncate_date = connection.ops.date_trunc_sql('month', 'moment')
-		mult = 0.001 if unit == Equipment.MEASUREMENT_UNITS[0][0] else 1
 		qs = Consumption.objects.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lte=get_last_day_of_month(datetime.strptime(dateTimeEnd, dateTimeFormat)))
-		aggregatedQuery = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month').annotate(current_avg=Avg('current'), voltage_avg=mult*Avg('voltage')).values('month', 'year', 'current_avg', 'voltage_avg')
+		aggregatedQuery = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month').annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('month', 'year', 'current_avg', 'voltage_avg')
 		dateFormat = "%Y-%m"
 
 		return_json = map(lambda set: 
-			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), set['voltage_avg'] * set['current_avg']], 
+			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), mult * set['voltage_avg'] * set['current_avg']], 
 				aggregatedQuery
 		)
 
@@ -185,7 +185,7 @@ def ajaxPlot(request):
 			timeRange = "daily"
 
 
-			
+
 			if timeRange == "daily":
 				timeFormat = "%d-%m-%Y"
 			elif timeRange == "hourly":
@@ -198,9 +198,11 @@ def ajaxPlot(request):
 			
 			dateTimeEnd = "01-10-2014"
 
+			unit = "kw"
+
 			# dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
 			# dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
-			unit = request.GET.get("unit", Equipment.MEASUREMENT_UNITS[0][0])
+			# unit = request.GET.get("unit", Equipment.MEASUREMENT_UNITS[0][0])
 			goal = []
 
 			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, timeFormat, unit)

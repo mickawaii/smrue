@@ -14,7 +14,7 @@ $(function(){
 	var hourlyFromTimeSelector = "input.from-time";
 	var hourlyToTimeSelector = "input.to-time";
 	var unitSelecSelector =  "select.unit";
-	var unit = "W";
+	var unit = $(unitSelecSelector).find(":selected").text();
 	var valueIndex = 1;
 	var dateIndex = 0;
 	var data = null;
