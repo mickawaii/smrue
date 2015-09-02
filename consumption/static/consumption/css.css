@@ -1,0 +1,12 @@
+.hour-date-month.nav-tabs>li {
+  float: none;
+  display: table-cell;
+}
+
+.hour-date-month {
+  width: 100px;
+}
+
+.tab-content {
+  display: table-cell;
+}
