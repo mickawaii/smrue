@@ -4,9 +4,11 @@ from smrue import views
 from django.contrib import admin
 admin.autodiscover()
 
+from django.contrib.auth.decorators import login_required
+
 urlpatterns = patterns('',
     # Examples:
-    url(r'^$', views.HomeView.as_view(), name='home'),
+    url(r'^$', login_required(views.HomeView.as_view()), name='home'),
     # url(r'^consumption/', include('consumption.urls')),
 
     url(r'^admin/', include(admin.site.urls)),
@@ -18,7 +20,7 @@ urlpatterns = patterns('',
     url(r'^consumption/', include('consumption.urls', namespace="consumption")),
     url(r'^aes_rate/', include('aes_rate.urls', namespace="aes_rate")),
 
-    url(r'^login$', views.LoginView.as_view(), name='login'),
-    url(r'^logout$', views.LogoutView.as_view(), name='logout'),
+    url(r'^login', views.LoginView.as_view(), name='login'),
+    url(r'^logout', views.LogoutView.as_view(), name='logout'),
 
 )
