@@ -1,3 +1,2 @@
 web: gunicorn smrue.wsgi --log-file -
-worker: celery -A smrue worker
-beat: celery -A smrue beat
+worker: celery -A smrue worker --app=smrue.tasks

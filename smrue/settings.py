@@ -144,9 +144,9 @@ if 'BASE_IRI' in os.environ:
 # CELERY_TASK_SERIALIZER = 'json'
 # CELERY_RESULT_SERIALIZER = 'json'
 CELERYBEAT_SCHEDULE = {
-    'add-every-10-days': {
+    'add-every-1-days': {
         'task': 'smrue.tasks.add',
-        'schedule': timedelta(days=1),
+        'schedule': timedelta(minutes=30),
         'args': ()
     },
 }
