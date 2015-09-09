@@ -4,4 +4,4 @@ from aes_rate.models import AESRate
 @task()
 def add():
 	# 
-	return 3
+	AESRate.update_info()

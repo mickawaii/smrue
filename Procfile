@@ -1,3 +1,2 @@
-web: gunicorn smrue.wsgi --log-file -
-worker: celery -A smrue worker
-beat: celery -A smrue beat
+
+beat: python manage.py celeryd –log-level=info
