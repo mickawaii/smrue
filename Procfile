@@ -1,2 +1,1 @@
-
-beat: python manage.py celeryd –log-level=info
+beat: celery -A smrue beat --app=smrue.celery_app:app --loglevel=info
