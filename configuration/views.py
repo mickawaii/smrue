@@ -98,12 +98,8 @@ class UserCreateView(CreateView):
 
 	def form_valid(self, form):
 		user = form.save()
-		income_type = form.cleaned_data["income_type"]
 		username = form['username'].value()
 		password = form['password1'].value()
-
-		if income_type:
-			Profile.objects.create(user=user,income_type=income_type)
 
 		user = authenticate(username=username, password=password)
 		login(self.request, user)
