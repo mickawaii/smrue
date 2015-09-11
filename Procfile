@@ -1,2 +1,1 @@
-
-beat: python manage.py celeryd –log-level=info
+worker: celery -A smrue worker --app=smrue.tasks
