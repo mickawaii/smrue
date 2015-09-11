@@ -146,7 +146,7 @@ if 'BASE_IRI' in os.environ:
 CELERYBEAT_SCHEDULE = {
     'add-every-1-days': {
         'task': 'smrue.tasks.add',
-        'schedule': timedelta(hours=1),
+        'schedule': timedelta(hours=4),
         'args': ()
     },
 }

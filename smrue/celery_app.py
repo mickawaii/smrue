@@ -11,3 +11,11 @@ app = Celery()
 
 app.config_from_object('django.conf:settings')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+
+from celery import task
+from aes_rate.models import AESRate
+
+@task()
+def add():
+  # 
+  AESRate.update_info()
