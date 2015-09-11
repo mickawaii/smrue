@@ -31,6 +31,12 @@ SECRET_KEY = '+2viif%shj@r*$g^h$-6c^pbclg1ieq)xyq78yd9o=ygwke0jb'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+LOGIN_URL = '/login/'
+
+LOGOUT_URL = '/logout/'
+
+LOGIN_REDIRECT_URL = '/'
+
 TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = [".herokuapp.com"]
@@ -149,9 +155,9 @@ if 'BASE_IRI' in os.environ:
 # CELERY_TASK_SERIALIZER = 'json'
 # CELERY_RESULT_SERIALIZER = 'json'
 CELERYBEAT_SCHEDULE = {
-    'add-every-10-days': {
+    'add-every-1-days': {
         'task': 'smrue.tasks.add',
-        'schedule': timedelta(days=1),
+        'schedule': timedelta(minutes=30),
         'args': ()
     },
 }

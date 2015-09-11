@@ -50,12 +50,18 @@ ul.ui-autocomplete {
 {% static "bootstrap-datepicker/js/bootstrap-datepicker.min.js" as datepicker_js %}
 {% static "jquery-mask/jquery.mask.min.js" as jquery_mask %}
 {% static "javascript/year_month_picker_future_only.js" as year_month_picker %}
+{% static "jquery-mask/jquery.mask.min.js" as jquery_mask %}
+{% static "javascript/percent_mask.js" as percent_mask %}
+
 <script src="{{jquery_ui}}"></script>
 <script src="{{moment_js}}"></script>
 <script src="{{daterangepicker_js}}"></script>
 <script src="{{datepicker_js}}"></script>
 <script src="{{jquery_mask}}"></script>
 <script src="{{year_month_picker}}"></script>
+<script src="{{jquery_mask}}"></script>
+<script src="{{percent_mask}}"></script>
+
 {% endblock %}
 
 {% block form_body %}
