@@ -8,21 +8,21 @@ import urllib
 import re
 
 class AESRate(models.Model):
-	name = models.CharField(max_length=255, blank=True, null=True)
+	name = models.CharField(max_length=255, blank=True, null=True, db_tablespace="indexes")
 	# tarifa do uso de sistema de distribuicao
-	tusd = models.DecimalField(max_digits=11, decimal_places=6, blank=True, null=True)
+	tusd = models.DecimalField(max_digits=11, decimal_places=6, blank=True, null=True, db_tablespace="indexes")
 	# tarifa de energia
-	te = models.DecimalField(max_digits=11, decimal_places=6, blank=True, null=True)
+	te = models.DecimalField(max_digits=11, decimal_places=6, blank=True, null=True, db_tablespace="indexes")
 
-	flag_additional_tax = models.DecimalField(max_digits=11, decimal_places=6, blank=True, null=True)
+	flag_additional_tax = models.DecimalField(max_digits=11, decimal_places=6, blank=True, null=True, db_tablespace="indexes")
 	# In kWh
-	range_start = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	range_end = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	range_start = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, db_tablespace="indexes")
+	range_end = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, db_tablespace="indexes")
 
 	# data em que foi conseguida a informação
-	date = models.DateTimeField(auto_now_add=True)
+	date = models.DateTimeField(auto_now_add=True, db_tablespace="indexes")
 	# data a partir do qual está válida as tarifas
-	valid_date = models.DateField(null=True)
+	valid_date = models.DateField(null=True, db_tablespace="indexes")
 
 	TAX_LINK = "https://www.aeseletropaulo.com.br/para-sua-casa/prazos-e-tarifas/conteudo/tarifa-de-energia-eletrica"
 
@@ -31,6 +31,7 @@ class AESRate(models.Model):
 
 	class Meta:
 		app_label = 'smrue'
+		db_tablespace = 'smrue'
 
 	def range_display(self):
 		if self.range_start and self.range_end:
