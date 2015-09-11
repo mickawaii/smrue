@@ -1,17 +1,17 @@
-from celery import task
-from aes_rate.models import AESRate
-
 import os
-import django
-
-from celery import Celery
 
 # set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'smrue.settings')
 
+from celery import task
+import django
+
+from celery import Celery
 
 from django.conf import settings
 django.setup()
+
+from aes_rate.models import AESRate
 
 app = Celery()
 
