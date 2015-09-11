@@ -1,12 +1,11 @@
-.hour-date-month.nav-tabs>li {
-  float: none;
+.render-options.nav-tabs>li {
   display: table-cell;
 }
 
-.hour-date-month {
+.render-options {
   width: 100px;
 }
 
-.tab-content {
+.render-options .tab-content {
   display: table-cell;
 }

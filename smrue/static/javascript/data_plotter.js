@@ -19,44 +19,9 @@ $(function(){
 	var dateIndex = 0;
 	var data = null;
 	var plot;
-	var timeRange;
-	var datePickerOptions;
-	var dateTimePickerOptions;
-	var dailyTitle = 'Potência x Dia';
-	var hourlyTitle = 'Potência x Hora';
-	var monthlyTitle = 'Potência x Mes';
 	
 	var xFormat;
-	var defaultPlotOptions = 	{
-									animate: true,
-									axesDefaults: {
-										min: null,
-       									max: null
-									},
-									animation: {
-										speed: 100
-									},
-									series:[
-										{
-											rendererOptions: {
-												// Speed up the animation a little bit.
-												// This is a number of milliseconds.  
-												// Default for bar series is 3000.  
-												animation: {
-													speed: 2000
-												},
-											}
-										}
-									],
-									highlighter: {
-										show: true,
-										sizeAdjust: 7.5
-									},
-									cursor: {
-										show: false
-									}
-					
-								};
+
 
 	var plotDataCopy = function(plotArray){
 		var copy = [];
@@ -261,22 +226,6 @@ $(function(){
 		
 	// });
 
-	var validatePlotData = function(plotsData){
-		var blankPlotData = [[[]]];
-
-		try{
-			for(var i = 0; i < plotsData.length; i++){
-				if(!(plotsData[i][0][0] && plotsData[i][0][1]))
-					return blankPlotData
-			}
-			return plotsData
-		}catch(err){
-			return blankPlotData
-		}
-	};
-
-	
-
 
 	var changeDate = function(xStart, xEnd, plotNewOptions, extraData){
 		$("#chart").hide();
@@ -324,8 +273,157 @@ $(function(){
 				console.log(data)
 				plot = $.jqplot('chart', validatePlotData(newPlotData[0]), $.extend(defaultPlotOptions, plotNewOptions));
 				plot.replot();
-		}
-	});
+			}
+		});
 	
 	};
-});
+
+	//--------------------------------------------Coisas novas
+
+	var timeRange;
+	var dailyTitle = 'Potência x Dia';
+	var hourlyTitle = 'Potência x Hora';
+	var monthlyTitle = 'Potência x Mes';
+
+	/*
+	Seletores dos inputs do form do gráfico. Usados como selectors do JQuery
+	hiddenXStartInputSelector = input com a data de inicio.
+	hiddenXEndInputSelector = input com a data de fim.
+	hiddenFormatInputSelector = input com o formato que as datas estão.
+	hiddenTimeRangeInputSelector = input que indica se é um gráfico por hora (hourly), dia (daily) ou mes (monthly)
+	goalInputSelector = input do checkbox se os goals devem ser mostrados
+	integrateInputSelector = input do checkbox se o gráfico deve ser integrado
+	buttonSelector = botao que manda o form
+	*/
+	var hiddenXStartInputSelector = "";
+	var hiddenXEndInputSelector = "";
+	var hiddenFormatInputSelector = "";
+	var hiddenTimeRangeInputSelector = "";
+	var goalInputSelector = "";
+	var integrateInputSelector = "";
+	var buttonSelector = "";
+	
+	var validatePlotData = function(plotsData){
+		var blankPlotData = [[[]]];
+
+		try{
+			for(var i = 0; i < plotsData.length; i++){
+				if(!(plotsData[i][0][0] && plotsData[i][0][1]))
+					return blankPlotData
+			}
+			return plotsData
+		}catch(err){
+			return blankPlotData
+		}
+	};
+
+	//Opcoes default do grafico
+	var defaultPlotOptions = 	{
+		animate: true,
+		axesDefaults: {
+			min: null,
+					max: null
+		},
+		animation: {
+			speed: 100
+		},
+		series:[
+			{
+				rendererOptions: {
+					// Speed up the animation a little bit.
+					// This is a number of milliseconds.  
+					// Default for bar series is 3000.  
+					animation: {
+						speed: 2000
+					},
+				}
+			}
+		],
+		highlighter: {
+			show: true,
+			sizeAdjust: 7.5
+		},
+		cursor: {
+			show: false
+		}
+
+	};
+
+	/*
+	Entradas:
+	xStart: data de inicio (String)
+	xEnd: data de fim (String)
+	goal: se o gráfico de metas deve ser mostrado (bool)
+	integrate: se o grafico de medidas deve ser integrado (bool)
+	format: o formato que as datas estao (string)
+	timeRange: se o grafico será por hora ("hourly"), dias ("daily") ou meses ("monthly")
+	*/
+	var callApi = function(xStart, xEnd, goal, integrate, format){
+		$.ajax({ 
+			type: 'GET', 
+			url: 'http://localhost:8000/consumption/ajaxPlot', 
+			dataType: 'json',
+			data: {
+				"xStart": xStart,
+				"xEnd": xEnd,
+				"goal": goal,
+				"integrate": integrate,
+				"format": format
+			},
+
+			success: function (response) { 
+				return response.plots;
+			}
+		});
+	}
+
+	var replotPlot = function(data, timeRange){
+		var plotTitle = "";
+		var xFormat = "";
+		if(timeRange == "hourly"){
+			plotTitle = hourlyTitle;
+			xFormat = "%d-%m-%y %H:%M";
+		} else if (timeRange == "daily") {
+			plotTitle = dailyTitle;
+			xFormat = "%d-%m-%y";
+		} else if ("monthly") {
+			plotTitle = monthlyTitle;
+			xFormat = "%m-%y";
+		};
+
+		var newOptions = 
+			{
+				title: plotTitle,
+				axes:{
+					xaxis:{
+						label: 'Data',
+						renderer:$.jqplot.DateAxisRenderer,
+						tickOptions:{
+							formatString:xFormat
+						}
+					},
+					yaxis:{
+						label: 'Potência',
+						tickOptions:{
+							formatString: unit + '%.3f'
+						}
+					}
+				}
+			};
+
+		plot = $.jqplot ('chart', validatePlotData(response.plots), $.extend(defaultPlotOptions, newOptions));
+	}
+
+	$(buttonSelector).click(function(){
+		var xStart = $(hiddenXStartInputSelector).val();
+		var xEnd = $(hiddenXEndInputSelector).val();
+		var xFormat = $(hiddenFormatInputSelector).val();
+		var yIntegrate = $(integrateInputSelector).is(":checked");
+		var showGoals = $(goalInputSelector).is(":checked");
+		var plots = callApi(xStart, xEnd, showGoals, yIntegrate, xFormat);
+
+		var timeRange = $(hiddenTimeRangeInputSelector).val();
+		replotPlot(plots, timeRange);
+		
+	});
+})
