@@ -4,7 +4,8 @@ from bs4 import BeautifulSoup
 from django.db import transaction
 from decimal import Decimal
 from datetime import datetime
-import urllib
+import ssl
+import urllib2
 import re
 
 class AESRate(models.Model):
@@ -46,14 +47,17 @@ class AESRate(models.Model):
 
 	@staticmethod
 	def update_info():
-		# the worker will get all the groups from aes_link up to last_group_initial
+		# the worker will get all the groups from aes_link with initials below
 		group_initials = ["B1", "B2", "B3"]
 		additional_tax = 0
 		red_flag = "bandeira-vermelha"
 		yellow_flag = "bandeira-amarela"
 		green_flag = "bandeira-verde"
 
-		f = urllib.urlopen(AESRate.TAX_LINK)
+		req = urllib2.Request(AESRate.TAX_LINK)
+		gcontext = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+		f = urllib2.urlopen(req, context=gcontext)
+
 		s = f.read()
 		f.close()
 

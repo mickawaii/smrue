@@ -1,10 +1,18 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 class Goal(models.Model):
 
 	name = models.CharField(max_length=255)
-	value_in_percent = models.DecimalField(max_digits=4, decimal_places=2)
+	value_in_percent = models.DecimalField(
+				max_digits=4, 
+				decimal_places=2,
+				default=50,
+				validators=[
+            MaxValueValidator(100),
+            MinValueValidator(1)
+        ])
 	yearmonth_start = models.DateField('Começo')
 	yearmonth_end = models.DateField('Fim')
 	equipment = models.ForeignKey('Equipment', null=True)

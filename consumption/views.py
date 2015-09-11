@@ -23,6 +23,9 @@ import json
 from django.db import connection
 import calendar
 from django.db import transaction
+from django.utils.datastructures import MultiValueDictKeyError
+from django.core.exceptions import ValidationError
+from exceptions import ValueError
 
 class GraphicView(TemplateView):
 	# form_class = UploadFileForm
@@ -49,10 +52,10 @@ def importCSV(request):
 	if request.method == 'POST': # If the form has been submitted...
 		# form = UploadFileForm(request.POST) # A form bound to the POST data
 		# if form.is_valid(): # All validation rules pass
-		csv_imported = request.FILES['csv']
-		csv_imported.open()
 		lineNumber = 0
 		try:
+			csv_imported = request.FILES['csv']
+			csv_imported.open()
 			csv_reader = unicodecsv.DictReader(csv_imported, lineterminator = '\n', delimiter=';', encoding='UTF-8')
 			with transaction.atomic():
 				for line in csv_reader:
@@ -60,9 +63,18 @@ def importCSV(request):
 					Consumption.new(line['moment'], line['current'], line['voltage'], line['equipment_id']).save()
 			url = reverse('consumption:graphic')
 			return HttpResponseRedirect(url)
-		except Exception, e:
+		except ValidationError as e:
 			url = reverse('consumption:graphic')
-			messages.error(request, 'Erro na linha ' + str(lineNumber) + ' do CSV')
+			messages.error(request, "Linha " + str(lineNumber) + ": " + '; '.join(e.messages))
+			return HttpResponseRedirect(url)
+		except MultiValueDictKeyError as e2:
+			url = reverse('consumption:graphic')
+			messages.error(request, "Escolha um arquivo para fazer a importação.")
+			return HttpResponseRedirect(url)
+		except ValueError as e3:
+			url = reverse('consumption:graphic')
+			import pdb; pdb.set_trace()
+			messages.error(request, "Linha "  + str(lineNumber) + ": " + str(e3))
 			return HttpResponseRedirect(url)
 
 def exportCSV(request):

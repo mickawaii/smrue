@@ -39,7 +39,7 @@ class ConfigView(TemplateView):
 
 		context['action_link'] = reverse_lazy("configuration:config")
 
-		context['form'] = ConfigForm()
+		context['form'] = ConfigForm(initial={'income_type': self.request.user.profile.income_type})
 
 		context['equipments'] = Equipment.objects.all()
 
@@ -50,6 +50,9 @@ class ConfigView(TemplateView):
 	def post(self, request):
 		equipments = json.loads(request.POST["equipments"])
 		income_type = request.POST["income_type"]
+
+		if income_type:
+			Profile.objects.update_or_create(user=request.user,defaults={"income_type":income_type})
 
 		with transaction.atomic():
 			for obj in equipments:
@@ -98,12 +101,8 @@ class UserCreateView(CreateView):
 
 	def form_valid(self, form):
 		user = form.save()
-		income_type = form.cleaned_data["income_type"]
 		username = form['username'].value()
 		password = form['password1'].value()
-
-		if income_type:
-			Profile.objects.create(user=user,income_type=income_type)
 
 		user = authenticate(username=username, password=password)
 		login(self.request, user)

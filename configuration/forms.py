@@ -20,9 +20,6 @@ class UserSetupForm(UserCreationForm):
 	password1 = forms.CharField(required=True, label='Senha', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
 	password2 = forms.CharField(required=True, label='Confirme sua Senha', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
 
-	# extra fields
-	income_type = forms.CharField(label='Tipo de Renda', widget=forms.Select(choices=[(val["name"], val["name"]) for val in AESRate.objects.values("name").distinct()], attrs={'class': 'form-control'}))
-
 	class Meta:
 		model = User
 		fields = ('username', 'email', 'first_name', 'last_name', 'password1', 'password2')        

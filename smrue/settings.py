@@ -31,6 +31,12 @@ SECRET_KEY = '+2viif%shj@r*$g^h$-6c^pbclg1ieq)xyq78yd9o=ygwke0jb'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+LOGIN_URL = '/login/'
+
+LOGOUT_URL = '/logout/'
+
+LOGIN_REDIRECT_URL = '/'
+
 TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = [".herokuapp.com"]
@@ -78,27 +84,30 @@ WSGI_APPLICATION = 'smrue.wsgi.application'
 # 	}
 # }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': 'df92jg90v64ufb',                      
-#         'USER': 'kawmralupavplb',
-#         'PASSWORD': 'LO9AMno_SHFuIM7IeSQGLajp2z',
-#         'HOST': 'ec2-54-83-18-87.compute-1.amazonaws.com',
-#         'PORT': '5432',
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',                      
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': '127.0.0.1',
-        'PORT': '1024',
+        'NAME': 'df92jg90v64ufb',                      
+        'USER': 'kawmralupavplb',
+        'PASSWORD': 'LO9AMno_SHFuIM7IeSQGLajp2z',
+        'HOST': 'ec2-54-83-18-87.compute-1.amazonaws.com',
+        'PORT': '5432',
     }
 }
+
+# DATABASES = {'default': dj_database_url.config(default='postgres://tkihlhiauawvvx:SlfzPvh1rai6YSp6_lmckX3KfQ@ec2-54-227-249-165.compute-1.amazonaws.com:5432/d312ostfbfevth')}
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'postgres',                      
+#         'USER': 'postgres',
+#         'PASSWORD': 'postgres',
+#         'HOST': '127.0.0.1',
+#         'PORT': '1024',
+#     }
+# }
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
@@ -137,8 +146,16 @@ if 'BASE_IRI' in os.environ:
 
 	DEBUG = TEMPLATE_DEBUG = True
 
-	DATABASES = {'default': dj_database_url.config(default='postgres://tkihlhiauawvvx:SlfzPvh1rai6YSp6_lmckX3KfQ@ec2-54-227-249-165.compute-1.amazonaws.com:5432/d312ostfbfevth')}
-
+	DATABASES = {
+		'default': {
+			'ENGINE': 'django.db.backends.postgresql_psycopg2',
+			'NAME': 'df92jg90v64ufb',                      
+			'USER': 'kawmralupavplb',
+			'PASSWORD': 'LO9AMno_SHFuIM7IeSQGLajp2z',
+			'HOST': 'ec2-54-83-18-87.compute-1.amazonaws.com',
+			'PORT': '5432',
+		}
+	}
 #Celery configuration (tasks) - http://celery.readthedocs.org/en/latest/userguide/periodic-tasks.html
 # CELERY_TIMEZONE = 'America/Sao_Paulo'
 	#Toda vez que o timezone muda, rode:
@@ -149,9 +166,9 @@ if 'BASE_IRI' in os.environ:
 # CELERY_TASK_SERIALIZER = 'json'
 # CELERY_RESULT_SERIALIZER = 'json'
 CELERYBEAT_SCHEDULE = {
-    'add-every-10-days': {
-        'task': 'smrue.tasks.add',
-        'schedule': timedelta(days=1),
-        'args': ()
-    },
+		'add-every-1-days': {
+				'task': 'smrue.tasks.add',
+				'schedule': timedelta(minutes=30),
+				'args': ()
+		},
 }
