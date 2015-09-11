@@ -85,14 +85,25 @@ WSGI_APPLICATION = 'smrue.wsgi.application'
 # 	}
 # }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'df92jg90v64ufb',                      
+#         'USER': 'kawmralupavplb',
+#         'PASSWORD': 'LO9AMno_SHFuIM7IeSQGLajp2z',
+#         'HOST': 'ec2-54-83-18-87.compute-1.amazonaws.com',
+#         'PORT': '5432',
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'df92jg90v64ufb',                      
-        'USER': 'kawmralupavplb',
-        'PASSWORD': 'LO9AMno_SHFuIM7IeSQGLajp2z',
-        'HOST': 'ec2-54-83-18-87.compute-1.amazonaws.com',
-        'PORT': '5432',
+        'NAME': 'postgres',                      
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': '127.0.0.1',
+        'PORT': '1024',
     }
 }
 
