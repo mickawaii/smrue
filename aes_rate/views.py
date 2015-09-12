@@ -47,7 +47,7 @@ class IndexView(ListView):
 			month = latest_date.month
 			day = latest_date.day
 
-			queryset = queryset.filter(date__year=year, date__month=month, date__day=day)
+			queryset = queryset.filter(date__year=year, date__month=month, date__day=day).order_by("name").order_by("-valid_date")
 
 		return queryset
 

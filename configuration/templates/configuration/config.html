@@ -13,6 +13,7 @@
 			margin-right: 20px;
 			text-align: center;
 			background: rgb(146, 225, 231);
+			margin-bottom: 15px;
 		}
 
 		.sensor-container {
@@ -104,6 +105,8 @@
 										{% endif %}
 									</div> 
 								</div>
+							{% empty %}
+								Não há equipamentos cadastrados
 							{% endfor %}
 						</div>
 					</div>
@@ -117,6 +120,8 @@
 									<i class="glyphicon glyphicon-collapse-up"></i>
 									{{sensor.name}}
 								</div>
+							{% empty %}
+								Não há sensores registrados
 							{% endfor %}
 						</div>
 						<div class="clearfix"></div>

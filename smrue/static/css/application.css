@@ -28,7 +28,13 @@ body {
 	vertical-align:middle;
 }
 .table-striped>tbody>tr:nth-child(odd)>td, .table-striped>tbody>tr:nth-child(odd)>th {
-    background-color: #FBFBFB;
+  background-color: #FBFBFB;
+}
+.dataTables_filter, .dataTables_paginate {
+  text-align: right;
+}
+#main_table {
+  margin-top: 10px;
 }
 .text-right {
   text-align:right;
