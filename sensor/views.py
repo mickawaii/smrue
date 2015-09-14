@@ -11,7 +11,6 @@ from django.utils.decorators import method_decorator
 from django.views.generic.base import TemplateView, View
 from django.views.generic.list import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormView
-from django.views.generic.detail import  DetailView
 from django.http import HttpResponse, HttpResponseRedirect
 
 from sensor.models import Sensor
@@ -37,3 +36,7 @@ class IndexView(ListView):
 	# @method_decorator(login_required(login_url=reverse_lazy('google_login:login_page')))
 	def dispatch(self, *args, **kwargs):
 		return super(IndexView, self).dispatch(*args, **kwargs)
+
+class DeleteView(DeleteView):
+	model = Sensor
+	success_url = reverse_lazy("sensor:list")

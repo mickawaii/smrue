@@ -12,6 +12,7 @@
 		<th>Nome</th>
 		<th>Código</th>
 		<th>Equip. Associado</th>
+		<th>Ações</th>
 	</tr>
 </thead>
 
@@ -22,6 +23,14 @@
 		<td>{{item.name}}</td>
 		<td>{{item.code}}</td>
 		<td>{{item.equipment.name}}</td>
+		<td class="text-center">
+			<div class="btn-group">
+				<button title="Remover" class="btn btn-danger" data-toggle="modal" data-target=".modal" value="{% url 'sensor:delete' pk=item.pk %}">
+					<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+				</button>
+				
+			</div>
+		</td>
 	</tr>
 {% endfor %}
 </tbody>
