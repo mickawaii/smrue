@@ -1,11 +1,3 @@
-.render-options.nav-tabs>li {
-  display: table-cell;
-}
-
-.render-options {
-  width: 100px;
-}
-
-.render-options .tab-content {
-  display: table-cell;
+#chart {
+	margin-bottom: 20px;
 }

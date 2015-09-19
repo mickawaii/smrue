@@ -34,6 +34,10 @@ class GraphicView(TemplateView):
 
 	def get_context_data(self, **kwargs):
 		context = super(GraphicView, self).get_context_data(**kwargs)
+		user = self.request.user
+
+		if hasattr(user, 'profile'):
+			context["income_type"] = user.profile.income_type
 
 		context["measurement_units"] = Equipment.MEASUREMENT_UNITS
 		context["months"] = ((1, "Janeiro"),(2, "Fevereiro"),(3, "Março"),(4, "Abril"),(5, "Maio"),(6, "Junho"),(7, "Julho"),(8, "Agosto"),(9, "Setembro"),(10, "Outubro"),(11, "Novembro"),(12, "Dezembro"))

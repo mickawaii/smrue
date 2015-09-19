@@ -22,7 +22,6 @@ $(function(){
 	
 	var xFormat;
 
-
 	var plotDataCopy = function(plotArray){
 		var copy = [];
 		for(var i = 0; i < plotArray[0][0].length; i ++){
@@ -426,4 +425,6 @@ $(function(){
 		replotPlot(plots, timeRange);
 		
 	});
+
+	$(".date-range-picker").val("01/09/2014 - 01/10/2014");
 })

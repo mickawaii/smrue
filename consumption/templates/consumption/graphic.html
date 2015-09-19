@@ -27,15 +27,15 @@
 {% static "jquery-jqplot/plugins/jqplot.cursor.min.js" as jqplot_cursor_js %}
 {% static "jquery-jqplot/plugins/jqplot.dateAxisRenderer.min.js" as jqplot_dateAxisRenderer_js %}
 {% static "jquery-jqplot/plugins/jqplot.barRenderer.min.js" as jqplot_barRenderer_js %}
-{% static "javascript/data_plotter.js" as data_plotter %}
 {% static "bootstrap-daterangepicker/daterangepicker.js" as daterangepicker_js %}
-{% static "javascript/date_time_range_picker_past_only.js" as date_time_range_picker_js %}
-{% static "javascript/date_range_picker_past_only.js" as date_range_picker_js %}
 {% static "bootstrap-timepicker/js/bootstrap-timepicker.js" as timepicker_js %}
 {% static "bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js" as datetimepicker_js %}
-{% static "javascript/time_picker_time_only.js" as time_picker_js %}
 {% static "bootstrap-datepicker/js/bootstrap-datepicker.min.js" as date_picker_js %}
+{% static "javascript/date_time_range_picker_past_only.js" as date_time_range_picker_js %}
 {% static "javascript/year_month_range_picker_past_only.js" as year_month_past_js %}
+{% static "javascript/date_range_picker_past_only.js" as date_range_picker_js %}
+{% static "javascript/time_picker_time_only.js" as time_picker_js %}
+{% static "javascript/data_plotter.js" as data_plotter %}
 
 <script type="text/javascript" src="{{moment_js}}"></script>
 <script type="text/javascript" src="{{jqplot_js}}"></script>
@@ -43,7 +43,6 @@
 <script type="text/javascript" src="{{jqplot_cursor_js}}"></script>
 <script type="text/javascript" src="{{jqplot_dateAxisRenderer_js}}"></script>
 <script type="text/javascript" src="{{jqplot_barRenderer_js}}"></script>
-<script type="text/javascript" src="{{data_plotter}}"></script>
 <script type="text/javascript" src="{{daterangepicker_js}}"></script>
 <script type="text/javascript" src="{{date_time_range_picker_js}}"></script>
 <script type="text/javascript" src="{{date_range_picker_js}}"></script>
@@ -52,6 +51,7 @@
 <script type="text/javascript" src="{{time_picker_js}}"></script>
 <script type="text/javascript" src="{{year_month_past_js}}"></script>
 <script type="text/javascript" src="{{date_picker_js}}"></script>
+<script type="text/javascript" src="{{data_plotter}}"></script>
 {% endblock %}
 
 {% block content %}
@@ -66,87 +66,102 @@
 
   <div class="row">
     
-    <div class="col-sm-12">
-      <div class="loading-gif"></div>
-      <div id="chart"></div>
-    </div>
+    {% if income_type %}
+      <div class="col-sm-12">
+        <div class="loading-gif"></div>
+        <div id="chart"></div>
+      </div>
+    {% else %}
+      <div class="alert alert-warning">Você ainda não possui um <b>Tipo de Renda</b> configurado. Clique aqui e escolha selecione um: <a class="btn btn-warning" href="{% url 'configuration:config' %}">Configurações</a></div>
+    {% endif %}
   </div>
 
-  <div class="row">
-    <div class="col-sm-6">
+  {% if income_type %}
+    <div class="row">
+      <div class="col-sm-6">
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs render-options" role="tablist">
+              <li role="presentation"><a href="#hour" aria-controls="hour" role="tab" data-toggle="tab">Hora</a></li>
+              <li role="presentation" class="active"><a href="#day" aria-controls="day" role="tab" data-toggle="tab">Dia</a></li>
+              <li role="presentation"><a href="#month" aria-controls="month" role="tab" data-toggle="tab">Mês</a></li>
+            </ul>
 
-      <!-- Nav tabs -->
-      <ul class="nav nav-tabs render-options" role="tablist">
-        <li role="presentation"><a href="#hour" aria-controls="hour" role="tab" data-toggle="tab">Hora</a></li>
-        <li role="presentation" class="active"><a href="#day" aria-controls="day" role="tab" data-toggle="tab">Dia</a></li>
-        <li role="presentation"><a href="#month" aria-controls="month" role="tab" data-toggle="tab">Mês</a></li>
-      </ul>
+            <!-- Tab panes -->
+            <div class="tab-content">
+              <div role="tabpanel" class="tab-pane" id="hour">
+                <div class="col-sm-12">
+                  <!-- Filtro por hora -->
+                  <label>Data (por hora): </label><input class="date-time-range-picker form-control"/>
+                  <button class="hourly-plot">Faz o grafico pra mim (hora)</button>
+                </div>
+              </div>
+              <div role="tabpanel" class="tab-pane active" id="day">
+                <div class="col-sm-12">
+                  <!-- Filtro por dia -->
+                  <label>Data (por dia): </label><input class="date-range-picker form-control"/>
+                  <button class="daily-plot">Faz o grafico pra mim (dia)</button>
+                </div>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="month">
+                <div class="col-sm-12">
+                  <!-- Filtro por mês -->
+                  <label>Data (por mês): </label>
+                  <input class="year-month-range-past hidden"/>
 
-      <!-- Tab panes -->
-      <div class="tab-content">
-        <div role="tabpanel" class="tab-pane" id="hour">
-          <div class="col-sm-12">
-            <!-- Filtro por hora -->
-            <label>Data (por hora): </label><input class="date-time-range-picker form-control"/>
-            <button class="hourly-plot">Faz o grafico pra mim (hora)</button>
+                  <div class="year-month-range-picker-past">
+                    <input type="text" class="input-small start"/>
+                    <span class="add-on">to</span>
+                    <input type="text" class="input-small end"/>
+                  </div>
+                  
+                  <button class="monthly-plot">Faz o grafico pra mim (mês)</button>
+                </div>
+              </div>
+              <div role="tabpanel" class="tab-pane" id="settings">
+                <div class="col-sm-12">
+                  <button class="integrate">Integrate Plot</button>
+                  <button class="power">Go back</button>
+                </div>
+                <label>Unidade de medida: </label>
+                <select class="unit">
+                  {% for acronym, v in measurement_units %}
+                      <option value="{{acronym}}">{{ v }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>      
           </div>
         </div>
-        <div role="tabpanel" class="tab-pane active" id="day">
-          <div class="col-sm-12">
-            <!-- Filtro por dia -->
-            <label>Data (por dia): </label><input class="date-range-picker form-control"/>
-            <button class="daily-plot">Faz o grafico pra mim (dia)</button>
-          </div>
-        </div>
-        <div role="tabpanel" class="tab-pane" id="month">
-          <div class="col-sm-12">
-            <!-- Filtro por mês -->
-            <label>Data (por mês): </label>
-            <input class="year-month-range-past"/>
-            <button class="monthly-plot">Faz o grafico pra mim (mês)</button>
+        
+      </div>
 
-            <div class="year-month-range-picker-past">
-              <input type="text" class="input-small start"/>
-              <span class="add-on">to</span>
-              <input type="text" class="input-small end"/>
-            </div>
+      <div class="col-sm-6" id="attachment_form">
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <form action="{% url 'consumption:importCSV' %}" method="POST" enctype="multipart/form-data" id="uploadform">
+                {% csrf_token %}
+                <label>Escolha um arquivo:</label><input name="csv" type="file">
+
+                {% if csv_error%}
+                  {{csv_error}}
+                {% endif %}
+                <div class="form-group">
+                    <input type="submit" class="btn btn-info" value="Importar">
+                </div>
+            </form>
+
+            <form action="{% url 'consumption:exportCSV' %}" method="GET" enctype="multipart/form-data" id="uploadform">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="submit" class="btn btn-info" value="Exportar">
+                </div>
+            </form>
           </div>
         </div>
-        <div role="tabpanel" class="tab-pane" id="settings">
-          <div class="col-sm-12">
-            <button class="integrate">Integrate Plot</button>
-            <button class="power">Go back</button>
-          </div>
-          <label>Unidade de medida: </label>
-          <select class="unit">
-            {% for acronym, v in measurement_units %}
-                <option value="{{acronym}}">{{ v }}</option>
-            {% endfor %}
-          </select>
-        </div>
-      </div>      
+      </div>
     </div>
 
-    <div class="col-sm-6" id="attachment_form">
-      <form action="{% url 'consumption:importCSV' %}" method="POST" enctype="multipart/form-data" id="uploadform">
-          {% csrf_token %}
-          <label>Escolha um arquivo:</label><input name="csv" type="file">
-          {% if csv_error%}
-            {{csv_error}}
-          {% endif %}
-          <div class="form-group">
-              <input type="submit" class="btn btn-info" value="Importar">
-          </div>
-      </form>
-
-      <form action="{% url 'consumption:exportCSV' %}" method="GET" enctype="multipart/form-data" id="uploadform">
-          {% csrf_token %}
-          <div class="form-group">
-              <input type="submit" class="btn btn-info" value="Exportar">
-          </div>
-      </form>
-    </div>
-  </div>
-
-
+  {% endif %}
 {% endblock %}
