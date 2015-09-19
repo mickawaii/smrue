@@ -14,6 +14,7 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormVi
 from django.http import HttpResponse, HttpResponseRedirect
 
 from sensor.models import Sensor
+from sensor.forms import SensorForm
 
 class IndexView(ListView):
 	template_name = 'sensor/list.html'
@@ -40,3 +41,32 @@ class IndexView(ListView):
 class DeleteView(DeleteView):
 	model = Sensor
 	success_url = reverse_lazy("sensor:list")
+
+class UpdateView(UpdateView):
+	template_name = 'sensor/form.html'
+
+	model = Sensor
+
+	form_class = SensorForm
+
+	success_url = reverse_lazy("sensor:list") # Url para redirecionamento
+
+	def get_context_data(self, **kwargs):
+		context = super(UpdateView, self).get_context_data(**kwargs)
+
+		context['page_title'] = "Editar Sensor"
+
+		context['form_title'] = "Editar Sensor"
+
+		context['editable'] = True
+
+		context['form_button'] = "Salvar"
+		context['form_button_class'] = "success"
+
+		context['action_link'] = reverse("sensor:edit", kwargs=self.kwargs)
+
+		context['back_button'] = "Voltar"
+
+		context['back_link'] = reverse("sensor:list")
+
+		return context
