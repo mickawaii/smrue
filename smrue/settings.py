@@ -147,16 +147,16 @@ if 'BASE_IRI' in os.environ:
 
 	DEBUG = TEMPLATE_DEBUG = True
 
-	DATABASES = {
-		'default': {
-			'ENGINE': 'django.db.backends.postgresql_psycopg2',
-			'NAME': 'df92jg90v64ufb',                      
-			'USER': 'kawmralupavplb',
-			'PASSWORD': 'LO9AMno_SHFuIM7IeSQGLajp2z',
-			'HOST': 'ec2-54-83-18-87.compute-1.amazonaws.com',
-			'PORT': '5432',
-		}
-	}
+	# DATABASES = {
+	# 	'default': {
+	# 		'ENGINE': 'django.db.backends.postgresql_psycopg2',
+	# 		'NAME': 'df92jg90v64ufb',                      
+	# 		'USER': 'kawmralupavplb',
+	# 		'PASSWORD': 'LO9AMno_SHFuIM7IeSQGLajp2z',
+	# 		'HOST': 'ec2-54-83-18-87.compute-1.amazonaws.com',
+	# 		'PORT': '5432',
+	# 	}
+	# }
 #Celery configuration (tasks) - http://celery.readthedocs.org/en/latest/userguide/periodic-tasks.html
 # CELERY_TIMEZONE = 'America/Sao_Paulo'
 	#Toda vez que o timezone muda, rode:
