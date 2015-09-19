@@ -149,7 +149,7 @@ def ajaxPlot(request):
 	# current: corrente medida
 def create(request):
 	try:
-		import pdb; pdb.set_trace()
+		# import pdb; pdb.set_trace()
 		if request.method == 'POST':
 			sensor = None
 			try:
