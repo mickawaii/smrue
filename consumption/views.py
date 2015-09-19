@@ -14,6 +14,8 @@ from equipment.models import Equipment
 from consumption.models import Consumption
 from aes_rate.models import AESRate
 from goal.models import Goal
+from consumption.models import Consumption
+from sensor.models import Sensor
 
 from django.template import RequestContext
 from datetime import datetime, timedelta
@@ -102,6 +104,77 @@ def exportCSV(request):
 			)
 		return response
 
+def ajaxPlot(request):
+	if request.method == 'GET':
+		try:
+			goal = request.GET.get("goal", True)
+			timeFormat = ""
+			# timeRange = request.GET.get("timeRange", "daily")
+			moneyFormat = request.GET.get("money", True)
+
+			timeRange = "daily"
+
+
+
+			if timeRange == "daily":
+				timeFormat = "%d-%m-%Y"
+			elif timeRange == "hourly":
+				timeFormat = "%d-%m-%Y %H:%M"
+			elif timeRange == "monthly":
+				timeFormat = "%m-%Y"
+
+
+			dateTimeStart = "01-09-2014"
+			
+			dateTimeEnd = "01-10-2014"
+
+			unit = "kw"
+
+			# dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
+			# dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
+			# unit = request.GET.get("unit", Equipment.MEASUREMENT_UNITS[0][0])
+			goal = []
+
+			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, timeFormat, unit)
+
+			# if moneyFormat:
+			# 	income_type = request.user.profile.income_type
+			# 	return_json = formatToMoneyData(timeRange, dateTimeStart, dateTimeEnd, timeFormat, unit, income_type, return_json)
+
+
+			return HttpResponse(json.dumps({'plots': [[return_json]]}), content_type="application/json")
+		except Exception as e:
+			print unicode(e.message)
+			return HttpResponse(json.dumps({'plots': [[[]]]}), content_type="application/json")
+
+# Parâmetros usados:
+	# code: código do sensor
+	# voltage: medida de voltagem
+	# current: corrente medida
+def create(request):
+	try:
+		import pdb; pdb.set_trace()
+		if request.method == 'POST':
+			sensor = None
+			try:
+				sensor = Sensor.objects.get(code=request.POST.get("code", ""))
+			except Sensor.DoesNotExist:
+				sensor = Sensor.objects.create(code=request.POST.get("code", ""), name="template" + unicode(datetime.now()))
+				sensor.save()
+
+			current = request.POST.get("current", -1.0);
+			voltage = request.POST.get("voltage", -1.0);
+
+			if current > 0:
+				if voltage > 0:
+					Consumption.new(datetime.now(), current, voltage, sensor.equipment.id).save()
+
+			return HttpReponse(status=201)
+		else	:
+			return HttpReponse(status=404)
+	except:
+		return HttpReponse(status=500)
+
 def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, unit):
 	aggregatedQuery= None
 	dateFormat = ""
@@ -189,46 +262,3 @@ def formatToMoneyData(timeRange, dateTimeStart, dateTimeEnd, timeFormat, unit, i
 				date_found = True
 
 	return jsonData
-
-def ajaxPlot(request):
-	if request.method == 'GET':
-		try:
-			goal = request.GET.get("goal", True)
-			timeFormat = ""
-			# timeRange = request.GET.get("timeRange", "daily")
-			moneyFormat = request.GET.get("money", True)
-
-			timeRange = "daily"
-
-
-
-			if timeRange == "daily":
-				timeFormat = "%d-%m-%Y"
-			elif timeRange == "hourly":
-				timeFormat = "%d-%m-%Y %H:%M"
-			elif timeRange == "monthly":
-				timeFormat = "%m-%Y"
-
-
-			dateTimeStart = "01-09-2014"
-			
-			dateTimeEnd = "01-10-2014"
-
-			unit = "kw"
-
-			# dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
-			# dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
-			# unit = request.GET.get("unit", Equipment.MEASUREMENT_UNITS[0][0])
-			goal = []
-
-			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, timeFormat, unit)
-
-			# if moneyFormat:
-			# 	income_type = request.user.profile.income_type
-			# 	return_json = formatToMoneyData(timeRange, dateTimeStart, dateTimeEnd, timeFormat, unit, income_type, return_json)
-
-
-			return HttpResponse(json.dumps({'plots': [[return_json]]}), content_type="application/json")
-		except Exception as e:
-			print unicode(e.message)
-			return HttpResponse(json.dumps({'plots': [[[]]]}), content_type="application/json")

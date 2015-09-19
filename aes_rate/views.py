@@ -40,14 +40,13 @@ class IndexView(ListView):
 
 	def get_queryset(self):
 		queryset = super(IndexView, self).get_queryset()
-		latest_date = queryset.aggregate(max_date=Max("date"))["max_date"]
-
+		latest_date = queryset.aggregate(max_date=Max("valid_date"))["max_date"]
 		if latest_date:
 			year = latest_date.year
 			month = latest_date.month
 			day = latest_date.day
 
-			queryset = queryset.filter(date__year=year, date__month=month, date__day=day).order_by("name").order_by("-valid_date")
+			queryset = queryset.filter(valid_date__year=year, valid_date__month=month, valid_date__day=day).order_by("name").order_by("-valid_date")
 
 		return queryset
 
