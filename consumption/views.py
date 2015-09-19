@@ -151,25 +151,30 @@ def create(request):
 	try:
 		# import pdb; pdb.set_trace()
 		if request.method == 'POST':
-			sensor = None
-			try:
-				sensor = Sensor.objects.get(code=request.POST.get("code", ""))
-			except Sensor.DoesNotExist:
-				sensor = Sensor.objects.create(code=request.POST.get("code", ""), name="template" + unicode(datetime.now()))
-				sensor.save()
-
+			code = request.POST.get("code", "").encode("utf-8")
+			print(code)
 			current = request.POST.get("current", -1.0);
 			voltage = request.POST.get("voltage", -1.0);
+
+			
+
+			sensor = None
+			try:
+				sensor = Sensor.objects.get(code=code)
+			except Sensor.DoesNotExist:
+				sensor = Sensor.objects.create(code=code, name="template" + unicode(datetime.now()))
+				sensor.save()
 
 			if current > 0:
 				if voltage > 0:
 					Consumption.new(datetime.now(), current, voltage, sensor.equipment.id).save()
 
-			return HttpReponse(status=201)
+			return HttpResponse(status=201)
 		else	:
-			return HttpReponse(status=404)
-	except:
-		return HttpReponse(status=500)
+			return HttpResponse(status=404)
+	except Exception as e:
+		print(error)
+		return HttpResponse(status=500)
 
 def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, unit):
 	aggregatedQuery= None
