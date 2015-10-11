@@ -100,15 +100,22 @@ def exportCSV(request):
 			)
 		return response
 
+# IN:
+# 	goal (true/false)
+# 	timeRange (daily/hourly/monthly)
+# 	unit (w/kw)
+# 	xStart (time)
+# 	xEnd (time)
+# 	equipmentId
 def ajaxPlot(request):
 	if request.method == 'GET':
 		try:
 			goal = request.GET.get("goal", True)
 			timeFormat = ""
-			# timeRange = request.GET.get("timeRange", "daily")
+			timeRange = request.GET.get("timeRange", "daily")
 			moneyFormat = request.GET.get("money", True)
 
-			timeRange = "daily"
+			# timeRange = "daily"
 
 
 
@@ -120,18 +127,22 @@ def ajaxPlot(request):
 				timeFormat = "%m-%Y"
 
 
-			dateTimeStart = "01-09-2014"
+			# dateTimeStart = "01-09-2014"
 			
-			dateTimeEnd = "01-10-2014"
+			# dateTimeEnd = "01-10-2014"
 
 			unit = "kw"
 
-			# dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
-			# dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
-			# unit = request.GET.get("unit", Equipment.MEASUREMENT_UNITS[0][0])
+			dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
+			dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
+			unit = request.GET.get("unit", Equipment.MEASUREMENT_UNITS[0][0])
+			equipmentId = request.GET.get("equipmentId", None)
+			# equipment = None
+			# if equipmentId:
+			# 	equipment = Equipment.objects.get(pk=equipmentId)
 			goal = []
 
-			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, timeFormat, unit)
+			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, timeFormat, unit, equipmentId)
 
 			# if moneyFormat:
 			# 	income_type = request.user.profile.income_type
@@ -176,40 +187,48 @@ def create(request):
 		print(error)
 		return HttpResponse(status=500)
 
-def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, unit):
+def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, unit, equipmentId):
 	aggregatedQuery= None
 	dateFormat = ""
 	return_json = None	
 	mult = 0.001 if unit == Equipment.MEASUREMENT_UNITS[1][0] else 1
 
+	qs = Consumption.objects
+	# import pdb; pdb.set_trace()
+	if equipmentId:
+		qs = qs.filter(equipment_id=equipmentId)
+
 	if timeRange == "daily":
-		aggregatedQuery = Consumption.objects.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lt=datetime.strptime(dateTimeEnd, dateTimeFormat) + timedelta(days=1)).extra({'moment': "date(moment)"}).values('moment').annotate(current=Avg('current'), voltage=Avg('voltage'))
+		qs = qs.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lt=datetime.strptime(dateTimeEnd, dateTimeFormat) + timedelta(days=1))
+		qs = qs.extra({'moment': "date(moment)"})
+		qs = qs.values('moment').annotate(current=Avg('current'), voltage=Avg('voltage'))
 		dateFormat = "%Y-%m-%d"
 
 		return_json = map(lambda set: 
 			[set['moment'].strftime(dateFormat), mult * set['voltage'] * set['current']], 
-				aggregatedQuery
+				qs
 		)
 		
 	elif timeRange == "hourly":
-		aggregatedQuery = Consumption.objects.values('moment', 'current', 'voltage').filter(moment__range=[datetime.strptime(dateTimeStart, dateTimeFormat), datetime.strptime(dateTimeEnd, dateTimeFormat)])
+		qs = qs.values('moment', 'current', 'voltage').filter(moment__range=[datetime.strptime(dateTimeStart, dateTimeFormat), datetime.strptime(dateTimeEnd, dateTimeFormat)])
 		dateFormat = "%Y-%m-%d %H:%M"
 
 		return_json = map(lambda set: 
 			[set['moment'].strftime(dateFormat), mult * set['voltage'] * set['current']], 
-				aggregatedQuery
+				qs
 		)
 
 	elif timeRange == "monthly":
 		# import pdb; pdb.set_trace()
 		# truncate_date = connection.ops.date_trunc_sql('month', 'moment')
-		qs = Consumption.objects.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lte=get_last_day_of_month(datetime.strptime(dateTimeEnd, dateTimeFormat)))
-		aggregatedQuery = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month').annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('month', 'year', 'current_avg', 'voltage_avg')
+		qs = qs.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lte=get_last_day_of_month(datetime.strptime(dateTimeEnd, dateTimeFormat)))
+		qs = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month')
+		qs = qs.annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('month', 'year', 'current_avg', 'voltage_avg')
 		dateFormat = "%Y-%m"
 
 		return_json = map(lambda set: 
 			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), mult * set['voltage_avg'] * set['current_avg']], 
-				aggregatedQuery
+				qs
 		)
 
 	return return_json
