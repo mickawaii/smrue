@@ -380,14 +380,16 @@ $(function(){
 
 		if(timeRange == "hourly"){
 			plotTitle = hourlyTitle;
-			xFormat = "%d-%m-%y %H:%M";
+			xFormat = "%d/%M/%y %H:%M";
 		} else if (timeRange == "daily") {
 			plotTitle = dailyTitle;
-			xFormat = "%d-%m-%y";
-		} else if ("monthly") {
+			xFormat = "%d/%M/%y";
+		} else if (timeRange == "monthly") {
 			plotTitle = monthlyTitle;
-			xFormat = "%m-%y";
+			xFormat = "%M/%y";
 		};
+
+		console.log(xFormat);
 
 		var newOptions = 
 			{
@@ -403,14 +405,12 @@ $(function(){
 					yaxis:{
 						label: 'Potência',
 						tickOptions:{
-							formatString: unit + '%.3f'
+							formatString: '%.3f '+unit
 						}
 					}
 				}
 			};
-		console.log([plots]);
-
-		plot = $.jqplot(chartId, [plots], $.extend(defaultPlotOptions, newOptions));
+		plot = $.jqplot(chartId, plots, $.extend(defaultPlotOptions, newOptions));
 	}
 
 	$(buttonSelector).click(function(){
@@ -432,10 +432,6 @@ $(function(){
 		}
 		callApi(data);
 		callApiRequest.success(function(response){
-			// $.each(plots, function(key, value) {
-			//       alert(key + ' ' + value);
-			//      data.push([key, value]);
-			// });
 			replotPlot(response.plots, timeRange);
 		});
 	});

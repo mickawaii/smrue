@@ -114,7 +114,7 @@ def ajaxPlot(request):
 			# timeRange = request.GET.get("timeRange", "daily")
 			timeRange = "daily"
 			unit = request.GET.get("measurement", "kw")
-			timeFormat = Consumption.DATE_FORMAT[timeRange]
+			timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
 
 			dateTimeStart = "01-09-2014"
 			
@@ -129,7 +129,7 @@ def ajaxPlot(request):
 			income_type = request.user.profile.income_type
 			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, income_type)
 
-			return HttpResponse(json.dumps({'plots': [[return_json]]}), content_type="application/json")
+			return HttpResponse(json.dumps({'plots': [return_json]}), content_type="application/json")
 		except Exception as e:
 			print unicode(e.message)
 			return HttpResponse(json.dumps({'plots': [[[]]]}), content_type="application/json")
@@ -166,7 +166,7 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, income_typ
 	return_json = None	
 	# 0.001 para kW
 	mult = 0.001 if unit == Equipment.MEASUREMENT_UNITS[1][0] else 1
-	timeFormat = Consumption.DATE_FORMAT[timeRange]
+	timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
 	start = datetime.strptime(dateTimeStart,timeFormat)
 	end = datetime.strptime(dateTimeEnd,timeFormat)
 
@@ -213,14 +213,15 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, income_typ
 					# comparando os valores -> passando para kw
 					if rate["range_start"]:
 						if return_json[index][1]*0.001 < rate["range_start"]:
-							data_found = False
+							date_found = False
 							
 					if rate["range_end"]:
 						if return_json[index][1]*0.001 > rate["range_end"]:
-							data_found = False
+							date_found = False
 
-					if data_found:
+					if date_found:
 						return_json[index][1] = return_json[index][1] * float(rate["tusd"] + rate["te"]) * mult
+
 	else:
 		return_json = map(lambda moment, consumption: 
 			[moment, consumption * mult], 
