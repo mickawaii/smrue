@@ -281,7 +281,7 @@ $(function(){
 	var timeRange;
 	var callApiRequest;
 	var chartId = "chart";
-	var loadingGif = "<div class='loading-gif></div>";
+	var loadingGif = "<div class='loading-gif'></div>";
 	var dailyTitle = 'Potência x Dia';
 	var hourlyTitle = 'Potência x Hora';
 	var monthlyTitle = 'Potência x Mes';
@@ -302,6 +302,7 @@ $(function(){
 	var goalInputSelector = "#boolean-goal";
 	var integrateInputSelector = "#boolean-integrate";
 	var buttonSelector = ".plot-button";
+	var plotUrl = $(buttonSelector).data("url");
 	
 	var validatePlotData = function(plotsData){
 		var blankPlotData = [[[]]];
@@ -365,7 +366,7 @@ $(function(){
 		$("#"+chartId).html(loadingGif);
 		callApiRequest = $.ajax({ 
 			type: 'GET', 
-			url: 'http://localhost:8000/consumption/ajaxPlot', 
+			url: plotUrl, 
 			dataType: 'json',
 			data: options, 
 			success: function(data) {
@@ -377,6 +378,8 @@ $(function(){
 	var replotPlot = function(plots, timeRange){
 		var plotTitle = "";
 		var xFormat = "";
+		var measurement = $(measurementInputSelector).find("option:selected").text();
+		var label = $(measurementInputSelector).find("option:selected").data("label");
 
 		if(timeRange == "hourly"){
 			plotTitle = hourlyTitle;
@@ -403,9 +406,9 @@ $(function(){
 						}
 					},
 					yaxis:{
-						label: 'Potência',
+						label: label,
 						tickOptions:{
-							formatString: '%.3f '+unit
+							formatString: '%.3f '+measurement
 						}
 					}
 				}
@@ -415,11 +418,10 @@ $(function(){
 
 	$(buttonSelector).click(function(){
 		var dateRangeInput = $(dateInputSelector).val();
-
+		var measurement = $(measurementInputSelector).val();
 		var xStart = dateRangeInput.split(" - ")[0].split("/").join("-");
 		var xEnd = dateRangeInput.split(" - ")[1].split("/").join("-");
 		var timeRange = $(timeRangeInputSelector).data("type");
-		var measurement = $(measurementInputSelector).val();
 		var yIntegrate = $(integrateInputSelector).is(":checked");
 		var showGoals = $(goalInputSelector).is(":checked");
 		data = {
