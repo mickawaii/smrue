@@ -19,12 +19,17 @@
 
     <title>{{page_title}}</title>
 
-    <link rel="stylesheet" type="text/css" href="{{application_css}}">
-    <link rel="stylesheet" type="text/css" href="{{bootstrap_css}}">
+    <link rel="stylesheet" type="text/css" href="{{bootstrap_css}}" />
+
+    {% block base_css %}
+
+    {% endblock %}
 
     {% block css %}
 
     {% endblock %}
+    
+    <link rel="stylesheet" type="text/css" href="{{application_css}}">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -36,6 +41,10 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script type="text/javascript" language="javascript" src="{{jquery_js}}"></script>
     <script type="text/javascript" language="javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    {% block base_js %}
+
+    {% endblock %}
     
     {% block js %}
 
@@ -44,29 +53,31 @@
 
   <body>
     <!-- Fixed navbar -->
-    <div class="navbar navbar-default" role="navigation">
+    <div class="navbar navbar-default navbar-static-top" role="navigation">
       <div class="container-fluid">
         <div class="navbar-header">
           <a class="navbar-brand" href="{% url 'home' %}">SMRUE</a>
-          <ul class="nav navbar-nav">
-            <li><a href="{% url 'admin:index' %}">Admin</a></li>
-            <li><a href="{% url 'equipment:list' %}">Equipamentos</a></li>
-            <li><a href="{% url 'sensor:list' %}">Sensores</a></li>
-            <li><a href="{% url 'goal:list' %}">Metas</a></li>
-          </ul>
         </div>
 
         <div class="navbar-collapse collapse">
-          {% if user.is_authenticated %}
-            <div class="navbar-right">
-              <div class="navbar-form">
-              </div>
-            </div>
-            <p class="navbar-right navbar-text">Olá, {{user.username}}</p>
-          {% else %}
-            <div class="navbar-form navbar-right">
-            </div>
-          {% endif %}
+          <ul class="nav navbar-nav navbar-left">
+            <li><a href="{% url 'admin:index' %}">Admin</a></li>
+            <li><a href="{% url 'consumption:graphic' %}">Consumo</a></li>
+            <li><a href="{% url 'equipment:list' %}">Equipamentos</a></li>
+            <li><a href="{% url 'sensor:list' %}">Sensores</a></li>
+            <li><a href="{% url 'configuration:config' %}">Configurações</a></li>
+            <li><a href="{% url 'aes_rate:table' %}">AES</a></li>
+            <li><a href="{% url 'goal:list' %}">Metas</a></li>
+          </ul>
+
+          <ul class="nav navbar-nav navbar-right">
+            {% if user.is_authenticated %}
+              <p class="navbar-text">Olá, <a href="{% url 'configuration:edit_user' %}">{{user.username}}</a></p>
+              <li><a href="{% url 'logout' %}">Logout</a></li>
+            {% else %}
+              <li><a href="{% url 'login' %}">Login</a></li>
+            {% endif %}
+          </ul>
         </div><!--/.nav-collapse -->
       </div>
     </div>

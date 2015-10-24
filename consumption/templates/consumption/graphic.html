@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block css %}
+{% static "jquery-jqplot/jquery.jqplot.min.css" as jqplot_css %}
+{% static "css/application.css" as app_css %}
+{% static "bootstrap-daterangepicker/daterangepicker.css" as daterangepicker_css %}
+{% static "bootstrap-timepicker/css/bootstrap-timepicker.min.css" as timepicker_css %}
+{% static "bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css" as datetimepicker_css %}
+{% static "images/loading.gif" as loading_gif %}
+{% static "bootstrap-datepicker/css/bootstrap-datepicker.min.css" as datepicker_css %}
+{% static "consumption/css.css" as consumption_css %}
+
+<link href="{{daterangepicker_css}}" rel="stylesheet">
+<link href="{{jqplot_css}}" rel="stylesheet">
+<link href="{{app_css}}" rel="stylesheet">
+<link href="{{timepicker_css}}" rel="stylesheet">
+<link href="{{datetimepicker_css}}" rel="stylesheet">
+<link href="{{datepicker_css}}" rel="stylesheet">
+<link href="{{consumption_css}}" rel="stylesheet">
+{% endblock %}
+
+{% block js %}
+{% static "bootstrap-datetimepicker/moment.min.js" as moment_js %}
+{% static "bootstrap-daterangepicker/daterangepicker.js" as daterangepicker_js %}
+{% static "bootstrap-timepicker/js/bootstrap-timepicker.js" as timepicker_js %}
+{% static "bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js" as datetimepicker_js %}
+{% static "bootstrap-datepicker/js/bootstrap-datepicker.min.js" as date_picker_js %}
+{% static "jquery-jqplot/jquery.jqplot.min.js" as jqplot_js %}
+{% static "jquery-jqplot/plugins/jqplot.highlighter.min.js" as jqplot_highlighter_js %}
+{% static "jquery-jqplot/plugins/jqplot.cursor.min.js" as jqplot_cursor_js %}
+{% static "jquery-jqplot/plugins/jqplot.dateAxisRenderer.min.js" as jqplot_dateAxisRenderer_js %}
+{% static "jquery-jqplot/plugins/jqplot.barRenderer.min.js" as jqplot_barRenderer_js %}
+{% static "javascript/date_time_range_picker_past_only.js" as date_time_range_picker_js %}
+{% static "javascript/year_month_range_picker_past_only.js" as year_month_past_js %}
+{% static "javascript/date_range_picker_past_only.js" as date_range_picker_js %}
+{% static "javascript/time_picker_time_only.js" as time_picker_js %}
+{% static "javascript/data_plotter.js" as data_plotter %}
+
+<script type="text/javascript" src="{{moment_js}}"></script>
+<script type="text/javascript" src="{{daterangepicker_js}}"></script>
+<script type="text/javascript" src="{{timepicker_js}}"></script>
+<script type="text/javascript" src="{{datetimepicker_js}}"></script>
+<script type="text/javascript" src="{{date_picker_js}}"></script>
+<script type="text/javascript" src="{{jqplot_js}}"></script>
+<script type="text/javascript" src="{{jqplot_highlighter_js}}"></script>
+<script type="text/javascript" src="{{jqplot_cursor_js}}"></script>
+<script type="text/javascript" src="{{jqplot_dateAxisRenderer_js}}"></script>
+<script type="text/javascript" src="{{jqplot_barRenderer_js}}"></script>
+<script type="text/javascript" src="{{date_time_range_picker_js}}"></script>
+<script type="text/javascript" src="{{year_month_past_js}}"></script>
+<script type="text/javascript" src="{{date_range_picker_js}}"></script>
+<script type="text/javascript" src="{{time_picker_js}}"></script>
+<script type="text/javascript" src="{{data_plotter}}"></script>
+{% endblock %}
+
+{% block content %}
+
+	{% if messages %}
+		<ul class="messages">
+			{% for message in messages %}
+				<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+			{% endfor %}
+		</ul>
+	{% endif %}
+
+	<div class="row">
+		
+		{% if income_type %}
+			<div class="col-sm-12">
+				<div id="chart"></div>
+			</div>
+		{% else %}
+			<div class="alert alert-warning">Você ainda não possui um <b>Tipo de Renda</b> configurado. Clique aqui e escolha selecione um: <a class="btn btn-warning" href="{% url 'configuration:config' %}">Configurações</a></div>
+		{% endif %}
+	</div>
+
+	{% if income_type %}
+		<div class="row">
+			<div class="col-sm-6">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<div class="row">
+							<div class="col-sm-12">
+								<!-- Nav tabs -->
+								<ul class="nav nav-tabs render-options" role="tablist">
+									<li role="presentation"><a href="#hour" aria-controls="hour" role="tab" data-toggle="tab">Hora</a></li>
+									<li role="presentation" class="active"><a href="#day" aria-controls="day" role="tab" data-toggle="tab">Dia</a></li>
+									<li role="presentation"><a href="#month" aria-controls="month" role="tab" data-toggle="tab">Mês</a></li>
+								</ul>
+
+								<!-- Tab panes -->
+								<div class="tab-content">
+									<div role="tabpanel" class="tab-pane" id="hour" data-type="hour">
+										<!-- Filtro por hora -->
+										<label>Data (por hora): </label>
+										<input class="date-input date-time-range-picker form-control"/>
+									</div>
+
+									<div role="tabpanel" class="tab-pane active" id="day" data-type="day">
+										<!-- Filtro por dia -->
+										<label>Data (por dia): </label>
+										<input class="date-input date-range-picker form-control"/>
+									</div>
+
+									<div role="tabpanel" class="tab-pane" id="month" data-type="month">
+										<!-- Filtro por mês -->
+										<label>Data (por mês): </label>
+										<input class="date-input year-month-range-past hidden"/>
+
+										<div class="year-month-range-picker-past">
+											<input type="text" class="input-small start form-control"/>
+											<span class="add-on">to</span>
+											<input type="text" class="input-small end form-control"/>
+										</div>
+									</div>
+
+									<div role="tabpanel" class="tab-pane" id="settings">
+										<div class="col-sm-12">
+											<button class="integrate">Integrate Plot</button>
+											<button class="power">Go back</button>
+										</div>
+									</div>
+								</div>      
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-sm-12">
+								<div class="checkbox">
+									<label>
+										<input id="boolean-integrate" type="checkbox"> Integrar gráfico
+									</label>
+								</div>
+
+								<div class="checkbox">
+									<label>
+										<input id="boolean-goal" type="checkbox"> Incluir meta
+									</label>
+								</div>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-sm-12">
+								<label>Unidade de medida: </label>
+
+								<select class="unit">
+									{% for acronym, v in measurement_units %}
+										<option value="{{acronym}}">{{ v }}</option>
+									{% endfor %}
+									<option value="money">R$</option>
+								</select>
+							</div>
+						</div>
+					</div>
+
+					<div class="panel-footer text-center">
+						<button role="button" type="button" class="btn btn-lg btn-info plot-button">Fazer gráfico</button>          
+					</div>
+				</div>
+			</div>
+
+			<div class="col-sm-6" id="attachment_form">
+				<div class="panel panel-default">
+					<div class="panel-body">
+						<form action="{% url 'consumption:importCSV' %}" method="POST" enctype="multipart/form-data" id="uploadform">
+								{% csrf_token %}
+								<label>Escolha um arquivo:</label><input name="csv" type="file">
+
+								{% if csv_error %}
+									{{csv_error}}
+								{% endif %}
+								<div class="form-group">
+										<input type="submit" class="btn btn-info" value="Importar">
+								</div>
+						</form>
+
+						<form action="{% url 'consumption:exportCSV' %}" method="GET" enctype="multipart/form-data" id="uploadform">
+								{% csrf_token %}
+								<div class="form-group">
+										<input type="submit" class="btn btn-info" value="Exportar">
+								</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	{% endif %}
+{% endblock %}

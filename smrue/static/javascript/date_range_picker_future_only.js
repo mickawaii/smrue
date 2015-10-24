@@ -1,10 +1,10 @@
 $(function(){
 	$('input.date-range-picker').daterangepicker({
-		format: 'DD/MM/YYYY',
-		startDate: moment(),
-		endDate: moment().add(1, 'days'),
+		startDate: moment().startOf('month'),
+		endDate: moment().endOf('month'),
 		minDate: moment(),
 		locale: {
+			format: 'DD/MM/YYYY',
 			applyLabel: 'Ok',
 			cancelLabel: 'Cancelar',
 			fromLabel: 'De',

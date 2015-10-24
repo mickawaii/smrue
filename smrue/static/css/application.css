@@ -3,14 +3,60 @@ body {
 	padding-bottom: 20px;
 }
 
+/* navbar */
+.navbar-default {
+    background-color: #4DB5E0;
+    border-bottom: 3px solid #D0D0D0;
+}
+.navbar-default .navbar-nav>li>a {
+    color: #F9F9F9;
+}
+.navbar-default .navbar-nav>li>a:hover, .navbar-default .navbar-nav>li>a:focus {
+    color: #FFF;
+    background-color: rgb(66, 139, 202);
+}
+.navbar-default .navbar-brand {
+    color: #FFF;
+}
+
 /* Tables: */
-.table thead tr th  {
+.table thead tr th {
 	text-align: center;
 	vertical-align:middle;
 }
 .table tbody tr td {
 	vertical-align:middle;
 }
+.table-striped>tbody>tr:nth-child(odd)>td, .table-striped>tbody>tr:nth-child(odd)>th {
+  background-color: #FBFBFB;
+}
+.dataTables_filter, .dataTables_paginate {
+  text-align: right;
+}
+#main_table {
+  margin-top: 10px;
+}
 .text-right {
-	text-align:right;
+  text-align:right;
+}
+
+.loading-gif{
+  background-image: url("/static/images/loading.gif");
+  background-repeat: no-repeat;
+  position: relative;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+}
+
+.monthly-range-picker tr:nth-child(2){
+  display: none
+}
+
+.monthly-range-picker tbody {
+  display: none
+}
+
+.monthly-range-picker .input-mini, .glyphicon-calendar {
+  display: none
 }

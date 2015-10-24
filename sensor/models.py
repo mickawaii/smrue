@@ -5,13 +5,14 @@ class Sensor(models.Model):
 	name = models.CharField(max_length=255)
 	code = models.CharField(max_length=255)
 
-	equipment = models.OneToOneField(Equipment)
+	equipment = models.OneToOneField(Equipment, blank=True, null=True)
 
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 
 	def __unicode__(self):
-		return "%s - %s" % (self.name, self.equipment.name)
+		equipment_name = self.equipment.name if self.equipment else "-----"
+		return "%s - %s" % (self.name, equipment_name)
 
 	class Meta:
 		app_label = 'smrue'

@@ -5,6 +5,43 @@
 <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/plug-ins/725b2a2115b/integration/bootstrap/3/dataTables.bootstrap.css">
 {% endblock %}
 
+{% block base_js %}
+<script type="text/javascript" language="javascript" src="//cdn.datatables.net/1.10.2/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript" src="//cdn.datatables.net/plug-ins/725b2a2115b/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+<script type="text/javascript" language="javascript" src="//cdn.datatables.net/plug-ins/9dcbecd42ad/sorting/date-euro.js"></script>
+<script type="text/javascript" charset="utf-8">
+      $(document).ready(function() {
+        $('#main_table').dataTable({
+            language: {
+              "sEmptyTable": "Nenhum registro encontrado",
+              "sInfo": "Mostrando de _START_ até _END_ de _TOTAL_ registros",
+              "sInfoEmpty": "Mostrando 0 até 0 de 0 registros",
+              "sInfoFiltered": "(Filtrados de _MAX_ registros)",
+              "sInfoPostFix": "",
+              "sInfoThousands": ".",
+              "sLengthMenu": "_MENU_ resultados por página",
+              "sLoadingRecords": "Carregando...",
+              "sProcessing": "Processando...",
+              "sZeroRecords": "Nenhum registro encontrado",
+              "sSearch": "Pesquisar",
+              "oPaginate": {
+               "sNext": "&rsaquo;",
+               "sPrevious": "&lsaquo;",
+               "sFirst": "&laquo;",
+               "sLast": "&raquo;"
+              },
+              "oAria": {
+                 "sSortAscending": ": Ordenar colunas de forma ascendente",
+                 "sSortDescending": ": Ordenar colunas de forma descendente"
+              }
+            },
+            "pageLength": {% if items_per_page %}{{items_per_page}}{% else %}10{% endif %},
+            "iDisplayLength": {% if table_default_results %}{{ table_default_results }}{% else %}10{% endif %}
+          });
+      });
+</script>
+{% endblock %}
+
 {% block content %}
   <div class="container">
     <div class="page-header">
@@ -41,32 +78,5 @@
     </div>
   {% endif %}
 
-  {% block modals %}
-    <div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <form id="delete-form" action method="post">
-
-            {% csrf_token %}
-            
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-              <h4 class="modal-title">Remoção</h4>
-            </div>
-
-            <div class="modal-body">
-              <p>Tem certeza que quer deletar o item?</p>
-            </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
-              <button type="submit" class="btn btn-primary" value="Deletar">Deletar</button>
-            </div>
-
-          </form>
-        </div>
-      </div>
-    </div>
-  {% endblock %}
 
 {% endblock %}

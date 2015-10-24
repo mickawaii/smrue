@@ -13,53 +13,62 @@
 	<link rel="stylesheet" type="text/css" href="{{jqplot_css}}">
 	<style type="text/css">
 		.home-button, .home-button:focus {
-			background: rgb(26, 205, 217);
-		  line-height: 100px;
-		  text-align: center;
-		  color: white;
-		  font-weight: normal;
-		  font-size: 24px;
-		  text-decoration: none;
+			background: #4DB5E0;
+			line-height: 100px;
+			text-align: center;
+			color: white;
+			font-weight: normal;
+			font-size: 24px;
+			text-decoration: none;
 		}
 
 		.home-button:hover {
-			background: rgb(26, 158, 167);
-		  text-decoration: none;
-		  color: white;
+			background: rgb(66, 139, 202);
+			text-decoration: none;
+			color: white;
 		}
 	</style>
 {% endblock %}
 
 {% block content %}
 	<div class="container">
-	  <div class="page-header">
-	    <h1>Bem vindo!</h1>
-	  </div>
+		<div class="jumbotron">
+			<h1>Bem vindo!</h1>
+			<p>Este é o seu sistema de monitoramento residencial de uso de energia!</p>
+			{% if no_users %}
+				<p><a class="btn btn-primary btn-lg" <a href="{% url 'configuration:create_user' %}" role="button">Clique aqui para começar</a></p>
+			{% endif %}
+		</div>
 
-	  <div class="row">
-	    <div class="col-xs-6 col-md-3">
-	      <a href="#" class="thumbnail home-button">
-	        Equipamentos
-	      </a>
-	    </div>
+		<div class="page-header">
+			<h1></h1>
+		</div>
 
-	    <div class="col-xs-6 col-md-3">
-	      <a href="#" class="thumbnail home-button">
-	        Metas
-	      </a>
-	    </div>
 
-	    <div class="col-xs-6 col-md-3">
-	      <a href="#" class="thumbnail home-button">
-	        Metas
-	      </a>
-	    </div>
+		<div class="row">
+			<div class="col-xs-6 col-md-3">
+				<a href="#" class="thumbnail home-button">
+					Equipamentos
+				</a>
+			</div>
 
-	    <div class="col-xs-6 col-md-3">
-	      <a href="#" class="thumbnail home-button">
-	        Metas
-	      </a>
-	    </div>
-	  </div>
+			<div class="col-xs-6 col-md-3">
+				<a href="#" class="thumbnail home-button">
+					Metas
+				</a>
+			</div>
+
+			<div class="col-xs-6 col-md-3">
+				<a href="#" class="thumbnail home-button">
+					Metas
+				</a>
+			</div>
+
+			<div class="col-xs-6 col-md-3">
+				<a href="#" class="thumbnail home-button">
+					Metas
+				</a>
+			</div>
+		</div>
 	</div>
 {% endblock %}

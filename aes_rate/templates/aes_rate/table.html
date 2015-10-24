@@ -1,0 +1,57 @@
+{% extends "base_list.html" %}
+
+{% load static from staticfiles %}
+
+{% block css %}
+<style type="text/css">
+	.help-text {
+		color: #B3B3B3;
+		margin-left: 10px;
+	}
+</style>
+{% endblock %}
+
+{% block js %}
+{% endblock %}
+
+{% block list_filters %}
+	<div class="form-group">
+		<a href="{% url 'aes_rate:refresh_rates' %}" class="btn btn-info"><i class="glyphicon glyphicon-refresh"></i></a>
+		<span class="help-text">
+			{% if last_update %}Última atualização: {{last_update|date:"d/m/Y"}}
+			{% else %}Clique para atualizar
+			{% endif %}</span>
+	</div>
+{% endblock %}
+
+{% block table_content %}
+	<thead>
+		<tr>
+			<th>Nome</th>
+			<th>Intervalo</th>
+			<th>TUSD</th>
+			<th>TE</th>
+			<th>Válido a partir de</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for item in aes_table %}
+			<tr>
+				<td>{{item.name}}</td>
+				<td>{{item.range_display}}</td>
+				<td>{{item.tusd}}</td>
+				<td>{{item.te}}</td>
+				<td>{{item.valid_date|date:"d/m/Y"}}</td>
+			</tr>		
+		{% empty %}
+			<tr>
+				<td colspan=5>Nenhum item registrado</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+
+{% endblock %}
+
+{% block modals %}
+	<p class="help-block">Para mais informações a respeito das tarifas, acesse: <a href="{{aes_link}}" class="btn btn-link">AES Eletropaulo</a></p>
+{% endblock %}
