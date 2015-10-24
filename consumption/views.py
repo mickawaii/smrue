@@ -119,7 +119,7 @@ def ajaxPlot(request):
 	print request
 	if request.method == 'GET':
 		try:
-			goal = request.GET.get("goal", True)
+			goal = request.GET.get("goal", False)
 			timeRange = request.GET.get("timeRange", "daily")
 			timeRange = "daily"
 			unit = request.GET.get("measurement", "kw")
@@ -136,9 +136,9 @@ def ajaxPlot(request):
 			# if equipmentId:
 			# 	equipment = Equipment.objects.get(pk=equipmentId)
 
-			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type)
+			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal)
 
-			return HttpResponse(json.dumps({'plots': [return_json]}), content_type="application/json")
+			return HttpResponse(json.dumps({'plots': return_json}), content_type="application/json")
 		except Exception as e:
 			print unicode(e.message)
 			return HttpResponse(json.dumps({'plots': [[[]]]}), content_type="application/json")
@@ -174,7 +174,7 @@ def create(request):
 		print(error)
 		return HttpResponse(status=500)
 
-def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type):
+def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal):
 	aggregatedQuery= None
 	return_json = None
 	# 0.001 para kW
@@ -190,7 +190,6 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 		if equipmentId != "":
 			qs = qs.filter(equipment_id=equipmentId)
 
-	import pdb; pdb.set_trace();
 	if timeRange == "hourly":
 		qs = qs.values('moment', 'current', 'voltage').filter(moment__range=[start, end])
 		dateFormat = "%Y-%m-%d %H:%M"
@@ -251,4 +250,26 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 				return_json
 		)
 
+
+	if goal:
+		goals = Goal.objects.filter(yearmonth_start__gte = start, yearmonth_end__lte = end) | \
+						Goal.objects.filter(yearmonth_start__lte = start, yearmonth_start__gte = start) | \
+						Goal.objects.filter(yearmonth_start__lte = end, yearmonth_start__gte = end)
+
+		goalList = []
+
+		for point in return_json:
+			newPoint = [point[0], 0]
+			pointDate = datetime.strptime(point[0], dateFormat)
+
+			for goal in goals:
+				if goal.yearmonth_start <= pointDate:
+					if goal.yearmonth_end <= pointDate:
+						newPoint[1] = goal.value_in_percent
+
+			goalList.append(newPoint)
+
+		return_json = [return_json, goalList]
+
+	import pdb; pdb.set_trace()
 	return return_json
