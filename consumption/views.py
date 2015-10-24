@@ -107,27 +107,34 @@ def exportCSV(request):
 			)
 		return response
 
+# IN:
+# 	goal (true/false)
+# 	timeRange (daily/hourly/monthly)
+# 	unit (w/kw)
+# 	xStart (time)
+# 	xEnd (time)
+# 	equipmentId
 def ajaxPlot(request):
 	if request.method == 'GET':
 		try:
 			goal = request.GET.get("goal", True)
-			# timeRange = request.GET.get("timeRange", "daily")
+			timeRange = request.GET.get("timeRange", "daily")
 			timeRange = "daily"
 			unit = request.GET.get("measurement", "kw")
+
+			# unit = "money"
 			timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
-
-			dateTimeStart = "01-09-2014"
-			
-			dateTimeEnd = "01-10-2014"
-
-			unit = "money"
-
-			# dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
-			# dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
-			# unit = request.GET.get("unit", Equipment.MEASUREMENT_UNITS[0][0])
-
+			dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
+			dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
+			# dateTimeStart = "01-09-2014"
+			# dateTimeEnd = "01-10-2014"
+			equipmentId = request.GET.get("equipmentId", None)
 			income_type = request.user.profile.income_type
-			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, income_type)
+			# equipment = None
+			# if equipmentId:
+			# 	equipment = Equipment.objects.get(pk=equipmentId)
+
+			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type)
 
 			return HttpResponse(json.dumps({'plots': [return_json]}), content_type="application/json")
 		except Exception as e:
@@ -141,62 +148,73 @@ def ajaxPlot(request):
 def create(request):
 	try:
 		if request.method == 'POST':
-			sensor = None
-			try:
-				sensor = Sensor.objects.get(code=request.POST.get("code", ""))
-			except Sensor.DoesNotExist:
-				sensor = Sensor.objects.create(code=request.POST.get("code", ""), name="template" + unicode(datetime.now()))
-				sensor.save()
-
+			code = request.POST.get("code", "").encode("utf-8")
+			print(code)
 			current = request.POST.get("current", -1.0);
 			voltage = request.POST.get("voltage", -1.0);
+
+			sensor = None
+
+			try:
+				sensor = Sensor.objects.get(code=code)
+			except Sensor.DoesNotExist:
+				sensor = Sensor.objects.create(code=code, name="template" + unicode(datetime.now()))
+				sensor.save()
 
 			if current > 0:
 				if voltage > 0:
 					Consumption.new(datetime.now(), current, voltage, sensor.equipment.id).save()
 
-			return HttpReponse(status=201)
+			return HttpResponse(status=201)
 		else	:
-			return HttpReponse(status=404)
-	except:
-		return HttpReponse(status=500)
+			return HttpResponse(status=404)
+	except Exception as e:
+		print(error)
+		return HttpResponse(status=500)
 
-def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, income_type):
+def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type):
 	aggregatedQuery= None
-	return_json = None	
+	return_json = None
 	# 0.001 para kW
 	mult = 0.001 if unit == Equipment.MEASUREMENT_UNITS[1][0] else 1
 	timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
 	start = datetime.strptime(dateTimeStart,timeFormat)
 	end = datetime.strptime(dateTimeEnd,timeFormat)
+	dateFormat = "%Y-%m-%d"
+	qs = Consumption.objects
+
+	if equipmentId:
+		qs = qs.filter(equipment_id=equipmentId)
 
 	if timeRange == "hourly":
-		aggregatedQuery = Consumption.objects.values('moment', 'current', 'voltage').filter(moment__range=[start, end])
+		qs = qs.values('moment', 'current', 'voltage').filter(moment__range=[start, end])
+		dateFormat = "%Y-%m-%d %H:%M"
 
 		return_json = map(lambda set: 
-			[set['moment'].strftime("%Y-%m-%d"), set['voltage'] * set['current']], 
-				aggregatedQuery
+			[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
+				qs
 		)
 
 	elif timeRange == "daily":
 		end = end + timedelta(days=1)
-		aggregatedQuery = Consumption.objects.filter(moment__gte=start, moment__lt=end).extra({'moment': "date(moment)"}).values('moment').annotate(current=Avg('current'), voltage=Avg('voltage'))
+		qs = qs.filter(moment__gte=start, moment__lt=end).extra({'moment': "date(moment)"}).values('moment').annotate(current=Avg('current'), voltage=Avg('voltage'))
 
 		return_json = map(lambda set: 
-			[set['moment'].strftime("%Y-%m-%d"), set['voltage'] * set['current']], 
-				aggregatedQuery
+			[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
+				qs
 		)
-		
+
 	elif timeRange == "monthly":
 		end = get_last_day_of_month(end)
-		qs = Consumption.objects.filter(moment__gte=start, moment__lte=end)
-		aggregatedQuery = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month').annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('month', 'year', 'current_avg', 'voltage_avg')
+		qs = qs.filter(moment__gte=start, moment__lte=end)
+		qs = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month')
+		qs = qs.annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('month', 'year', 'current_avg', 'voltage_avg')
+		dateFormat = "%Y-%m"
 
 		return_json = map(lambda set: 
-			[datetime(int(set['year']), int(set['month']), 1).strftime("%Y-%m-%d"), set['voltage_avg'] * set['current_avg']], 
-				aggregatedQuery
+			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), set['voltage_avg'] * set['current_avg']], 
+				qs
 		)
-
 	if unit == "money":
 		date1 = AESRate.objects.filter(valid_date__lte=start, name=income_type).order_by("-valid_date").first().valid_date
 		date2 = end
@@ -223,12 +241,9 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, income_typ
 						return_json[index][1] = return_json[index][1] * float(rate["tusd"] + rate["te"]) * mult
 
 	else:
-		return_json = map(lambda moment, consumption: 
-			[moment, consumption * mult], 
+		return_json = map(lambda set: 
+			[set[0], set[1] * mult], 
 				return_json
 		)
-
-
-	print return_json
 
 	return return_json
