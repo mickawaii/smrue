@@ -1,205 +1,203 @@
 $(function(){
 
-	var dateTimeInputSelector = "input.date-time-range-picker";
-	var dateInputSelector = "input.date-range-picker";
-	var monthInputSelector = "input.year-month-range-picker-past";
+	// var dateTimeInputSelector = "input.date-time-range-picker";
+	// var dateInputSelector = "input.date-range-picker";
+	// var monthInputSelector = "input.year-month-range-picker-past";
 
-	var integrateButtonSelector = "button.integrate";
-	var unintegrateButtonSelector = "button.power";
+	// var integrateButtonSelector = "button.integrate";
+	// var unintegrateButtonSelector = "button.power";
 
-	var hourlyPlotButtonSelector = "button.hourly-plot";
-	var dailyPlotButtonSelector = "button.daily-plot";
-	var monthlyPlotButtonSelector = "button.monthly-plot";
+	// var hourlyPlotButtonSelector = "button.hourly-plot";
+	// var dailyPlotButtonSelector = "button.daily-plot";
+	// var monthlyPlotButtonSelector = "button.monthly-plot";
 
-	var hourlyFromTimeSelector = "input.from-time";
-	var hourlyToTimeSelector = "input.to-time";
+	// var hourlyFromTimeSelector = "input.from-time";
+	// var hourlyToTimeSelector = "input.to-time";
 	var unitSelecSelector =  "select.unit";
 	var unit = $(unitSelecSelector).find(":selected").text();
-	var valueIndex = 1;
-	var dateIndex = 0;
-	var data = null;
-	var plot;
+	// var valueIndex = 1;
+	// var dateIndex = 0;
+	// var data = null;
+	// var plot;
 	
-	var xFormat;
+	// var xFormat;
+
+	// var plotDataCopy = function(plotArray){
+	// 	var copy = [];
+	// 	for(var i = 0; i < plotArray[0][0].length; i ++){
+	// 		copy.push([plotArray[0][0][i][0], plotArray[0][0][i][1]]);
+	// 	}
+	// 	return copy;
+	// }
+
+	// var integrate = function(plotArray){
+	// 	var dataCopy = plotDataCopy(plotArray);
+	// 	var referenceValue = 0;
+
+	// 	for(var i = 0; i < dataCopy.length; i ++){
+	// 		if(i == 0){
+	// 			referenceValue = dataCopy[i][valueIndex];
+	// 		}else{
+	// 			dataCopy[i][valueIndex] += referenceValue;
+	// 			referenceValue = dataCopy[i][valueIndex];
+	// 		}
+	// 	}
 
 
-	var plotDataCopy = function(plotArray){
-		var copy = [];
-		for(var i = 0; i < plotArray[0][0].length; i ++){
-			copy.push([plotArray[0][0][i][0], plotArray[0][0][i][1]]);
-		}
-		return copy;
-	}
+	// 	return [[dataCopy]];
+	// };
 
-	var integrate = function(plotArray){
-		var dataCopy = plotDataCopy(plotArray);
-		var referenceValue = 0;
+	// var initialize = function(){
+	// 	$(".loading-gif").show();
+	// 	$("#chart").hide();
 
-		for(var i = 0; i < dataCopy.length; i ++){
-			if(i == 0){
-				referenceValue = dataCopy[i][valueIndex];
-			}else{
-				dataCopy[i][valueIndex] += referenceValue;
-				referenceValue = dataCopy[i][valueIndex];
-			}
-		}
+	// 	$(unintegrateButtonSelector).hide();
+	// 	$(integrateButtonSelector).show();
 
+	// 	$.ajax({ 
+	// 		type: 'GET', 
+	// 		url: 'http://localhost:8000/consumption/ajaxPlot', 
+	// 		dataType: 'json',
+	// 		success: function (response) { 
 
-		return [[dataCopy]];
-	};
+	// 			$(".loading-gif").hide();
+	// 			$("#chart").show();
 
-	var initialize = function(){
-
-		$(".loading-gif").show();
-		$("#chart").hide();
-
-		$(unintegrateButtonSelector).hide();
-		$(integrateButtonSelector).show();
-
-		$.ajax({ 
-			type: 'GET', 
-			url: 'http://localhost:8000/consumption/ajaxPlot', 
-			dataType: 'json',
-			success: function (response) { 
-
-				$(".loading-gif").hide();
-				$("#chart").show();
-
-				var newOptions = 
-					{
-						title: dailyTitle,
-						axes:{
-							xaxis:{
-								label: 'Data',
-								renderer:$.jqplot.DateAxisRenderer,
-								tickOptions:{
-									formatString:'%d-%m-%y'
-								}
-							},
-							yaxis:{
-								label: 'Potência',
-								tickOptions:{
-									formatString: unit + '%.3f'
-								}
-							}
-						}
-					};
+	// 			var newOptions = 
+	// 				{
+	// 					title: dailyTitle,
+	// 					axes:{
+	// 						xaxis:{
+	// 							label: 'Data',
+	// 							renderer:$.jqplot.DateAxisRenderer,
+	// 							tickOptions:{
+	// 								formatString:'%d-%m-%y'
+	// 							}
+	// 						},
+	// 						yaxis:{
+	// 							label: 'Potência',
+	// 							tickOptions:{
+	// 								formatString: unit + '%.3f'
+	// 							}
+	// 						}
+	// 					}
+	// 				};
 
 
-				data = response.plots;
-				plot = $.jqplot ('chart', validatePlotData(response.plots), $.extend(defaultPlotOptions, newOptions));
-			}
-		});
+	// 			data = response.plots;
+	// 			plot = $.jqplot ('chart', validatePlotData(response.plots), $.extend(defaultPlotOptions, newOptions));
+	// 		}
+	// 	});
 
-		$(unitSelecSelector).change(function(){
-			unit = $(this).val();
-		});
+	// 	$(unitSelecSelector).change(function(){
+	// 		unit = $(this).val();
+	// 	});
 
-		$(integrateButtonSelector).click(function(){
+	// 	$(integrateButtonSelector).click(function(){
 
-			console.log(data);
-			var integratedData = integrate(data);
+	// 		console.log(data);
+	// 		var integratedData = integrate(data);
 
-			var newOptions = {
-				data: integratedData[0]
-			}
+	// 		var newOptions = {
+	// 			data: integratedData[0]
+	// 		}
 
-			plot.replot($.extend(defaultPlotOptions, newOptions));
-			$(unintegrateButtonSelector).show();
-			$(integrateButtonSelector).hide();
-		});
+	// 		plot.replot($.extend(defaultPlotOptions, newOptions));
+	// 		$(unintegrateButtonSelector).show();
+	// 		$(integrateButtonSelector).hide();
+	// 	});
 
-		$(unintegrateButtonSelector).click(function(){
+	// 	$(unintegrateButtonSelector).click(function(){
 
-			var newOptions = {
-				data: data[0]
-			}
-			plot.replot($.extend(defaultPlotOptions, newOptions));
-			$(unintegrateButtonSelector).hide();
-			$(integrateButtonSelector).show();
-		});
+	// 		var newOptions = {
+	// 			data: data[0]
+	// 		}
+	// 		plot.replot($.extend(defaultPlotOptions, newOptions));
+	// 		$(unintegrateButtonSelector).hide();
+	// 		$(integrateButtonSelector).show();
+	// 	});
 
-		$(hourlyPlotButtonSelector).click(function(){
-			var newOptions = 
-				{
-					title: hourlyTitle,
-					axes:{
-						xaxis:{
-							label: 'Horário',
-						},
-						yaxis:{
-							label: 'Potência',
-						}
-					}
-				};
+	// 	$(hourlyPlotButtonSelector).click(function(){
+	// 		var newOptions = 
+	// 			{
+	// 				title: hourlyTitle,
+	// 				axes:{
+	// 					xaxis:{
+	// 						label: 'Horário',
+	// 					},
+	// 					yaxis:{
+	// 						label: 'Potência',
+	// 					}
+	// 				}
+	// 			};
 
-			xFormat = '%H:%M';
+	// 		xFormat = '%H:%M';
 
-			timeRange = "hourly";
+	// 		timeRange = "hourly";
 
-			getTimeRangeAndGetData(dateTimeInputSelector, hourlyFromTimeSelector, hourlyToTimeSelector, newOptions);
-		});
+	// 		getTimeRangeAndGetData(dateTimeInputSelector, hourlyFromTimeSelector, hourlyToTimeSelector, newOptions);
+	// 	});
 
-		$(dailyPlotButtonSelector).click(function(){
-			var newOptions = 
-			{
-				title: dailyTitle,
-				axes:{
-					xaxis:{
-						label: 'Data',
-					},
-					yaxis:{
-						label: 'Potência',
-					}
-				}
-			};
+	// 	$(dailyPlotButtonSelector).click(function(){
+	// 		var newOptions = 
+	// 		{
+	// 			title: dailyTitle,
+	// 			axes:{
+	// 				xaxis:{
+	// 					label: 'Data',
+	// 				},
+	// 				yaxis:{
+	// 					label: 'Potência',
+	// 				}
+	// 			}
+	// 		};
 
-			xFormat = '%d-%m-%y';
+	// 		xFormat = '%d-%m-%y';
 
-			timeRange = "daily";
+	// 		timeRange = "daily";
 
-			getDateRangeAndGetData(dateInputSelector, newOptions);
-		});
+	// 		getDateRangeAndGetData(dateInputSelector, newOptions);
+	// 	});
 
-		$(monthlyPlotButtonSelector).click(function(){
-			var newOptions = 
-			{
-				title: monthlyTitle,
-				axes:{
-					xaxis:{
-						label: 'Data',
-					},
-					yaxis:{
-						label: 'Potência',
-					}
-				}
-			};
+	// 	$(monthlyPlotButtonSelector).click(function(){
+	// 		var newOptions = 
+	// 		{
+	// 			title: monthlyTitle,
+	// 			axes:{
+	// 				xaxis:{
+	// 					label: 'Data',
+	// 				},
+	// 				yaxis:{
+	// 					label: 'Potência',
+	// 				}
+	// 			}
+	// 		};
 
-			xFormat = '%m-%y';
+	// 		xFormat = '%m-%y';
 
-			timeRange = "monthly";
+	// 		timeRange = "monthly";
 
-			getDateRangeAndGetData(monthInputSelector, newOptions);
-		});
+	// 		getDateRangeAndGetData(monthInputSelector, newOptions);
+	// 	});
 
-	}();
+	// }();
 
-	var getTimeRangeAndGetData = function(datePickerSelector, fromTimePickerSelector, toTimePickerSelector, newOptions){
-		var dateRange = $(datePickerSelector).val();
-		var dateStart = dateRange.split(" - ")[0].split("/").join("-")
-		var dateEnd = dateRange.split(" - ")[1] .split("/").join("-")
+	// var getTimeRangeAndGetData = function(datePickerSelector, fromTimePickerSelector, toTimePickerSelector, newOptions){
+	// 	var dateRange = $(datePickerSelector).val();
+	// 	var dateStart = dateRange.split(" - ")[0].split("/").join("-")
+	// 	var dateEnd = dateRange.split(" - ")[1] .split("/").join("-")
 
-		changeDate(dateStart,dateEnd,newOptions,5);
+	// 	changeDate(dateStart,dateEnd,newOptions,5);
 			
-	}
+	// }
 
-	var getDateRangeAndGetData = function(pickerSelector, newOptions){
-		var dateRange = $(pickerSelector).val();
-		var dateStart = dateRange.split(" - ")[0].split("/").join("-")
-		var dateEnd = dateRange.split(" - ")[1] .split("/").join("-")
+	// var getDateRangeAndGetData = function(pickerSelector, newOptions){
+	// 	var dateRange = $(pickerSelector).val();
+	// 	var dateStart = dateRange.split(" - ")[0].split("/").join("-")
+	// 	var dateEnd = dateRange.split(" - ")[1] .split("/").join("-")
 
-		changeDate(dateStart,dateEnd,newOptions,5);
-	}
+	// 	changeDate(dateStart,dateEnd,newOptions,5);
+	// }
 
 	//Passou de ser aplicado quando o daterangepicker eh okzado para quando um botao eh apertado.
 	//comentado para futuras referencias
@@ -227,81 +225,83 @@ $(function(){
 	// });
 
 
-	var changeDate = function(xStart, xEnd, plotNewOptions, extraData){
-		$("#chart").hide();
-		$(".loading-gif").show();
+	// var changeDate = function(xStart, xEnd, plotNewOptions, extraData){
+	// 	$("#chart").hide();
+	// 	$(".loading-gif").show();
 
-		$.ajax({ 
-			type: 'GET', 
-			url: 'http://localhost:8000/consumption/ajaxPlot?', 
-			dataType: 'json',
-			data:
-				{
-					"xStart": xStart,
-					"xEnd": xEnd,
-					"extraData": extraData,
-					"unit": unit,
-					"timeRange": timeRange
-				},
-			success: function (response) { 
+	// 	$.ajax({ 
+	// 		type: 'GET', 
+	// 		url: 'http://localhost:8000/consumption/ajaxPlot?', 
+	// 		dataType: 'json',
+	// 		data:
+	// 			{
+	// 				"xStart": xStart,
+	// 				"xEnd": xEnd,
+	// 				"extraData": extraData,
+	// 				"unit": unit,
+	// 				"timeRange": timeRange
+	// 			},
+	// 		success: function (response) { 
 
-				var newPlotData = validatePlotData(response.plots);
-				$(".loading-gif").hide();
-				$("#chart").show();
+	// 			var newPlotData = validatePlotData(response.plots);
+	// 			$(".loading-gif").hide();
+	// 			$("#chart").show();
 
-				var newOptions = $.extend(
-					plotNewOptions,
-					{
-						axes:{
-							xaxis:{
-								renderer:$.jqplot.DateAxisRenderer,
-								tickOptions:{
-									formatString: xFormat
-								}
-							},
-							yaxis:{
-								tickOptions:{
-									formatString: unit.toUpperCase() + '%.3f'
-								}
-							}
-						}
-					}
-				);
+	// 			var newOptions = $.extend(
+	// 				plotNewOptions,
+	// 				{
+	// 					axes:{
+	// 						xaxis:{
+	// 							renderer:$.jqplot.DateAxisRenderer,
+	// 							tickOptions:{
+	// 								formatString: xFormat
+	// 							}
+	// 						},
+	// 						yaxis:{
+	// 							tickOptions:{
+	// 								formatString: unit.toUpperCase() + '%.3f'
+	// 							}
+	// 						}
+	// 					}
+	// 				}
+	// 			);
 
-				data = newPlotData;
+	// 			data = newPlotData;
 
-				console.log(data)
-				plot = $.jqplot('chart', validatePlotData(newPlotData[0]), $.extend(defaultPlotOptions, plotNewOptions));
-				plot.replot();
-			}
-		});
+	// 			console.log(data)
+	// 			plot = $.jqplot('chart', validatePlotData(newPlotData[0]), $.extend(defaultPlotOptions, plotNewOptions));
+	// 			plot.replot();
+	// 		}
+	// 	});
 	
-	};
+	// };
 
 	//--------------------------------------------Coisas novas
 
 	var timeRange;
+	var callApiRequest;
+	var chartId = "chart";
+	var loadingGif = "<div class='loading-gif></div>";
 	var dailyTitle = 'Potência x Dia';
 	var hourlyTitle = 'Potência x Hora';
 	var monthlyTitle = 'Potência x Mes';
 
 	/*
 	Seletores dos inputs do form do gráfico. Usados como selectors do JQuery
-	hiddenXStartInputSelector = input com a data de inicio.
-	hiddenXEndInputSelector = input com a data de fim.
-	hiddenFormatInputSelector = input com o formato que as datas estão.
-	hiddenTimeRangeInputSelector = input que indica se é um gráfico por hora (hourly), dia (daily) ou mes (monthly)
+	xStartInputSelector = input com a data de inicio.
+	xEndInputSelector = input com a data de fim.
+	formatInputSelector = input com o formato que as datas estão.
+	timeRangeInputSelector = input que indica se é um gráfico por hora (hourly), dia (daily) ou mes (monthly)
 	goalInputSelector = input do checkbox se os goals devem ser mostrados
 	integrateInputSelector = input do checkbox se o gráfico deve ser integrado
 	buttonSelector = botao que manda o form
 	*/
-	var hiddenXStartInputSelector = "";
-	var hiddenXEndInputSelector = "";
-	var hiddenFormatInputSelector = "";
-	var hiddenTimeRangeInputSelector = "";
-	var goalInputSelector = "";
-	var integrateInputSelector = "";
-	var buttonSelector = "";
+	var dateInputSelector = ".tab-pane.active .date-input";
+	var measurementInputSelector = ".unit";
+	var timeRangeInputSelector = ".tab-pane.active";
+	var goalInputSelector = "#boolean-goal";
+	var integrateInputSelector = "#boolean-integrate";
+	var buttonSelector = ".plot-button";
 	
 	var validatePlotData = function(plotsData){
 		var blankPlotData = [[[]]];
@@ -311,18 +311,21 @@ $(function(){
 				if(!(plotsData[i][0][0] && plotsData[i][0][1]))
 					return blankPlotData
 			}
+			console.log("plotsData on validate");
+			console.log(plotsData);
 			return plotsData
 		}catch(err){
+			console.log(err);
 			return blankPlotData
 		}
 	};
 
 	//Opcoes default do grafico
-	var defaultPlotOptions = 	{
+	var defaultPlotOptions = {
 		animate: true,
 		axesDefaults: {
 			min: null,
-					max: null
+			max: null
 		},
 		animation: {
 			speed: 100
@@ -350,7 +353,7 @@ $(function(){
 	};
 
 	/*
-	Entradas:
+	data:
 	xStart: data de inicio (String)
 	xEnd: data de fim (String)
 	goal: se o gráfico de metas deve ser mostrado (bool)
@@ -358,38 +361,35 @@ $(function(){
 	format: o formato que as datas estao (string)
 	timeRange: se o grafico será por hora ("hourly"), dias ("daily") ou meses ("monthly")
 	*/
-	var callApi = function(xStart, xEnd, goal, integrate, format){
-		$.ajax({ 
+	var callApi = function(options){
+		$("#"+chartId).html(loadingGif);
+		callApiRequest = $.ajax({ 
 			type: 'GET', 
 			url: 'http://localhost:8000/consumption/ajaxPlot', 
 			dataType: 'json',
-			data: {
-				"xStart": xStart,
-				"xEnd": xEnd,
-				"goal" goal,
-				"integrate": integrate,
-				"format": format
-			},
-
-			success: function (response) { 
-				return response.plots;
-			}
+			data: options, 
+			success: function(data) {
+		    	return data;
+		    }
 		});
 	}
 
-	var replotPlot = function(data, timeRange){
+	var replotPlot = function(plots, timeRange){
 		var plotTitle = "";
 		var xFormat = "";
+
 		if(timeRange == "hourly"){
 			plotTitle = hourlyTitle;
-			xFormat = "%d-%m-%y %H:%M";
+			xFormat = "%d/%M/%y %H:%M";
 		} else if (timeRange == "daily") {
 			plotTitle = dailyTitle;
-			xFormat = "%d-%m-%y";
-		} else if ("monthly") {
+			xFormat = "%d/%M/%y";
+		} else if (timeRange == "monthly") {
 			plotTitle = monthlyTitle;
-			xFormat = "%m-%y";
+			xFormat = "%M/%y";
 		};
+
+		console.log(xFormat);
 
 		var newOptions = 
 			{
@@ -397,33 +397,44 @@ $(function(){
 				axes:{
 					xaxis:{
 						label: 'Data',
-						renderer:$.jqplot.DateAxisRenderer,
+						renderer: $.jqplot.DateAxisRenderer,
 						tickOptions:{
-							formatString:xFormat
+							formatString: xFormat
 						}
 					},
 					yaxis:{
 						label: 'Potência',
 						tickOptions:{
-							formatString: unit + '%.3f'
+							formatString: '%.3f '+unit
 						}
 					}
 				}
 			};
-
-		plot = $.jqplot ('chart', validatePlotData(response.plots), $.extend(defaultPlotOptions, newOptions));
+		plot = $.jqplot(chartId, plots, $.extend(defaultPlotOptions, newOptions));
 	}
 
 	$(buttonSelector).click(function(){
-		var xStart = $(hiddenXStartInputSelector).val();
-		var xEnd = $(hiddenXEndInputSelector).val();
-		var xFormat = $(hiddenFormatInputSelector).val();
+		var dateRangeInput = $(dateInputSelector).val();
+
+		var xStart = dateRangeInput.split(" - ")[0].split("/").join("-");
+		var xEnd = dateRangeInput.split(" - ")[1].split("/").join("-");
+		var timeRange = $(timeRangeInputSelector).data("type");
+		var measurement = $(measurementInputSelector).val();
 		var yIntegrate = $(integrateInputSelector).is(":checked");
 		var showGoals = $(goalInputSelector).is(":checked");
-		var plots = callApi(xStart, xEnd, showGoals, yIntegrate, xFormat);
-
-		var timeRange = $(hiddenTimeRangeInputSelector).val();
-		replotPlot(plots, timeRange);
-		
+		data = {
+			"xStart": xStart,
+			"xEnd": xEnd,
+			"timeRange": timeRange,
+			"goal": showGoals,
+			"integrate": yIntegrate,
+			"measurement": measurement
+		}
+		callApi(data);
+		callApiRequest.success(function(response){
+			replotPlot(response.plots, timeRange);
+		});
 	});
-});
+
+	$(".date-range-picker").val("01/09/2014 - 01/10/2014");
+})

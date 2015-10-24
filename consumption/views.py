@@ -36,6 +36,10 @@ class GraphicView(TemplateView):
 
 	def get_context_data(self, **kwargs):
 		context = super(GraphicView, self).get_context_data(**kwargs)
+		user = self.request.user
+
+		if hasattr(user, 'profile'):
+			context["income_type"] = user.profile.income_type
 
 		context["measurement_units"] = Equipment.MEASUREMENT_UNITS
 		context["months"] = ((1, "Janeiro"),(2, "Fevereiro"),(3, "Março"),(4, "Abril"),(5, "Maio"),(6, "Junho"),(7, "Julho"),(8, "Agosto"),(9, "Setembro"),(10, "Outubro"),(11, "Novembro"),(12, "Dezembro"))
@@ -65,14 +69,17 @@ def importCSV(request):
 					Consumption.new(line['moment'], line['current'], line['voltage'], line['equipment_id']).save()
 			url = reverse('consumption:graphic')
 			return HttpResponseRedirect(url)
+
 		except ValidationError as e:
 			url = reverse('consumption:graphic')
 			messages.error(request, "Linha " + str(lineNumber) + ": " + '; '.join(e.messages))
 			return HttpResponseRedirect(url)
+
 		except MultiValueDictKeyError as e2:
 			url = reverse('consumption:graphic')
 			messages.error(request, "Escolha um arquivo para fazer a importação.")
 			return HttpResponseRedirect(url)
+
 		except ValueError as e3:
 			url = reverse('consumption:graphic')
 			import pdb; pdb.set_trace()
@@ -111,45 +118,25 @@ def ajaxPlot(request):
 	if request.method == 'GET':
 		try:
 			goal = request.GET.get("goal", True)
-			timeFormat = ""
 			timeRange = request.GET.get("timeRange", "daily")
-			moneyFormat = request.GET.get("money", True)
+			timeRange = "daily"
+			unit = request.GET.get("measurement", "kw")
 
-			# timeRange = "daily"
-
-
-
-			if timeRange == "daily":
-				timeFormat = "%d-%m-%Y"
-			elif timeRange == "hourly":
-				timeFormat = "%d-%m-%Y %H:%M"
-			elif timeRange == "monthly":
-				timeFormat = "%m-%Y"
-
-
-			# dateTimeStart = "01-09-2014"
-			
-			# dateTimeEnd = "01-10-2014"
-
-			unit = "kw"
-
+			# unit = "money"
+			timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
 			dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
 			dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
-			unit = request.GET.get("unit", Equipment.MEASUREMENT_UNITS[0][0])
+			# dateTimeStart = "01-09-2014"
+			# dateTimeEnd = "01-10-2014"
 			equipmentId = request.GET.get("equipmentId", None)
+			income_type = request.user.profile.income_type
 			# equipment = None
 			# if equipmentId:
 			# 	equipment = Equipment.objects.get(pk=equipmentId)
-			goal = []
 
-			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, timeFormat, unit, equipmentId)
+			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type)
 
-			# if moneyFormat:
-			# 	income_type = request.user.profile.income_type
-			# 	return_json = formatToMoneyData(timeRange, dateTimeStart, dateTimeEnd, timeFormat, unit, income_type, return_json)
-
-
-			return HttpResponse(json.dumps({'plots': [[return_json]]}), content_type="application/json")
+			return HttpResponse(json.dumps({'plots': [return_json]}), content_type="application/json")
 		except Exception as e:
 			print unicode(e.message)
 			return HttpResponse(json.dumps({'plots': [[[]]]}), content_type="application/json")
@@ -160,16 +147,14 @@ def ajaxPlot(request):
 	# current: corrente medida
 def create(request):
 	try:
-		# import pdb; pdb.set_trace()
 		if request.method == 'POST':
 			code = request.POST.get("code", "").encode("utf-8")
 			print(code)
 			current = request.POST.get("current", -1.0);
 			voltage = request.POST.get("voltage", -1.0);
 
-			
-
 			sensor = None
+
 			try:
 				sensor = Sensor.objects.get(code=code)
 			except Sensor.DoesNotExist:
@@ -187,98 +172,78 @@ def create(request):
 		print(error)
 		return HttpResponse(status=500)
 
-def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, dateTimeFormat, unit, equipmentId):
+def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type):
 	aggregatedQuery= None
-	dateFormat = ""
-	return_json = None	
+	return_json = None
+	# 0.001 para kW
 	mult = 0.001 if unit == Equipment.MEASUREMENT_UNITS[1][0] else 1
-
+	timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
+	start = datetime.strptime(dateTimeStart,timeFormat)
+	end = datetime.strptime(dateTimeEnd,timeFormat)
+	dateFormat = "%Y-%m-%d"
 	qs = Consumption.objects
-	# import pdb; pdb.set_trace()
+
 	if equipmentId:
 		qs = qs.filter(equipment_id=equipmentId)
 
-	if timeRange == "daily":
-		qs = qs.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lt=datetime.strptime(dateTimeEnd, dateTimeFormat) + timedelta(days=1))
-		qs = qs.extra({'moment': "date(moment)"})
-		qs = qs.values('moment').annotate(current=Avg('current'), voltage=Avg('voltage'))
-		dateFormat = "%Y-%m-%d"
-
-		return_json = map(lambda set: 
-			[set['moment'].strftime(dateFormat), mult * set['voltage'] * set['current']], 
-				qs
-		)
-		
-	elif timeRange == "hourly":
-		qs = qs.values('moment', 'current', 'voltage').filter(moment__range=[datetime.strptime(dateTimeStart, dateTimeFormat), datetime.strptime(dateTimeEnd, dateTimeFormat)])
+	if timeRange == "hourly":
+		qs = qs.values('moment', 'current', 'voltage').filter(moment__range=[start, end])
 		dateFormat = "%Y-%m-%d %H:%M"
 
 		return_json = map(lambda set: 
-			[set['moment'].strftime(dateFormat), mult * set['voltage'] * set['current']], 
+			[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
+				qs
+		)
+
+	elif timeRange == "daily":
+		end = end + timedelta(days=1)
+		qs = qs.filter(moment__gte=start, moment__lt=end).extra({'moment': "date(moment)"}).values('moment').annotate(current=Avg('current'), voltage=Avg('voltage'))
+
+		return_json = map(lambda set: 
+			[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
 				qs
 		)
 
 	elif timeRange == "monthly":
-		# import pdb; pdb.set_trace()
-		# truncate_date = connection.ops.date_trunc_sql('month', 'moment')
-		qs = qs.filter(moment__gte=datetime.strptime(dateTimeStart,dateTimeFormat), moment__lte=get_last_day_of_month(datetime.strptime(dateTimeEnd, dateTimeFormat)))
+		end = get_last_day_of_month(end)
+		qs = qs.filter(moment__gte=start, moment__lte=end)
 		qs = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month')
 		qs = qs.annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('month', 'year', 'current_avg', 'voltage_avg')
 		dateFormat = "%Y-%m"
 
 		return_json = map(lambda set: 
-			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), mult * set['voltage_avg'] * set['current_avg']], 
+			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), set['voltage_avg'] * set['current_avg']], 
 				qs
+		)
+	if unit == "money":
+		date1 = AESRate.objects.filter(valid_date__lte=start, name=income_type).order_by("-valid_date").first().valid_date
+		date2 = end
+		rates = AESRate.objects.filter(valid_date__gte=date1, valid_date__lt=date2, name=income_type).order_by("-valid_date").values("range_start", "range_end", "te", "tusd", "valid_date")
+
+		for index, item in enumerate(return_json):
+			date_found = False
+
+			for rate in rates:
+
+				if rate["valid_date"] <= datetime.strptime(return_json[index][0], "%Y-%m-%d").date() and not date_found:
+					date_found = True
+
+					# comparando os valores -> passando para kw
+					if rate["range_start"]:
+						if return_json[index][1]*0.001 < rate["range_start"]:
+							date_found = False
+							
+					if rate["range_end"]:
+						if return_json[index][1]*0.001 > rate["range_end"]:
+							date_found = False
+
+					if date_found:
+						return_json[index][1] = return_json[index][1] * float(rate["tusd"] + rate["te"]) * mult
+
+	else:
+		return_json = map(lambda set: 
+			[set[0], set[1] * mult], 
+				return_json
 		)
 
 	return return_json
-
-def formatToMoneyData(timeRange, dateTimeStart, dateTimeEnd, timeFormat, unit, incomeType, jsonData):
-	# se dinheiro
-	# monta intervalo
-
-	if timeRange == "hourly":
-		dateStartFilter = datetime.strptime(dateTimeStart, timeFormat)
-		dateEndFilter = datetime.strptime(dateTimeEnd, timeFormat)
-
-	elif timeRange == "daily":
-		dateStartFilter = datetime.strptime(dateTimeStart, timeFormat)
-		dateEndFilter = datetime.strptime(dateTimeEnd, timeFormat)+timedelta(days=1)
-
-	elif timeRange == "monthly":
-		dateStartFilter = datetime.strptime(dateTimeStart, timeFormat)
-		dateEndFilter = get_last_day_of_month(datetime.strptime(dateTimeEnd, timeFormat))
-
-	date1 = AESRate.objects.filter(valid_date__lte=dateStartFilter, name=incomeType).order_by("-valid_date").first().valid_date
-	date2 = dateEndFilter
-	rates = AESRate.objects.filter(valid_date__gte=date1, valid_date__lt=date2, name=incomeType).order_by("-valid_date").values("range_start", "range_end", "te", "tusd", "valid_date")
-
-	for i in xrange(len(jsonData)-1):
-		date_found = False
-
-		for rate in rates:
-
-			if rate["valid_date"] <= datetime.strptime(jsonData[i][0], "%Y-%m-%d").date() and not date_found:
-				if unit == Equipment.MEASUREMENT_UNITS[0][0] or unit == Equipment.MEASUREMENT_UNITS[0][1]:
-					unit = 1
-				else:
-					unit = 0.001
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-				jsonData[i][1] = jsonData[i][1] * float(rate["tusd"] + rate["te"]) * 1000
-				date_found = True
-
-	return jsonData
