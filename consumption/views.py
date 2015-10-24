@@ -43,6 +43,7 @@ class GraphicView(TemplateView):
 
 		context["measurement_units"] = Equipment.MEASUREMENT_UNITS
 		context["months"] = ((1, "Janeiro"),(2, "Fevereiro"),(3, "Março"),(4, "Abril"),(5, "Maio"),(6, "Junho"),(7, "Julho"),(8, "Agosto"),(9, "Setembro"),(10, "Outubro"),(11, "Novembro"),(12, "Dezembro"))
+		context["equipments"] = Equipment.objects.all()
 		return context
 
 def get_first_day_of_month(dt, d_years=0, d_months=0):
@@ -115,6 +116,7 @@ def exportCSV(request):
 # 	xEnd (time)
 # 	equipmentId
 def ajaxPlot(request):
+	print request
 	if request.method == 'GET':
 		try:
 			goal = request.GET.get("goal", True)
@@ -183,9 +185,12 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 	dateFormat = "%Y-%m-%d"
 	qs = Consumption.objects
 
-	if equipmentId:
-		qs = qs.filter(equipment_id=equipmentId)
 
+	if equipmentId:
+		if equipmentId != "":
+			qs = qs.filter(equipment_id=equipmentId)
+
+	import pdb; pdb.set_trace();
 	if timeRange == "hourly":
 		qs = qs.values('moment', 'current', 'voltage').filter(moment__range=[start, end])
 		dateFormat = "%Y-%m-%d %H:%M"

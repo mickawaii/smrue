@@ -298,9 +298,11 @@ $(function(){
 	*/
 	var dateInputSelector = ".tab-pane.active .date-input";
 	var measurementInputSelector = ".unit";
+	var equipmentSelector = ".equipment";
 	var timeRangeInputSelector = ".tab-pane.active";
 	var goalInputSelector = "#boolean-goal";
 	var integrateInputSelector = "#boolean-integrate";
+	
 	var buttonSelector = ".plot-button";
 	
 	var validatePlotData = function(plotsData){
@@ -422,13 +424,15 @@ $(function(){
 		var measurement = $(measurementInputSelector).val();
 		var yIntegrate = $(integrateInputSelector).is(":checked");
 		var showGoals = $(goalInputSelector).is(":checked");
+		var equipmentId = $(equipmentSelector).val();
 		data = {
 			"xStart": xStart,
 			"xEnd": xEnd,
 			"timeRange": timeRange,
 			"goal": showGoals,
 			"integrate": yIntegrate,
-			"measurement": measurement
+			"measurement": measurement,
+			"equipmentId": equipmentId
 		}
 		callApi(data);
 		callApiRequest.success(function(response){

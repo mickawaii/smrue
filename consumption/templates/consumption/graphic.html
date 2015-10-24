@@ -91,19 +91,19 @@
 
 								<!-- Tab panes -->
 								<div class="tab-content">
-									<div role="tabpanel" class="tab-pane" id="hour" data-type="hour">
+									<div role="tabpanel" class="tab-pane" id="hour" data-type="hourly">
 										<!-- Filtro por hora -->
 										<label>Data (por hora): </label>
 										<input class="date-input date-time-range-picker form-control"/>
 									</div>
 
-									<div role="tabpanel" class="tab-pane active" id="day" data-type="day">
+									<div role="tabpanel" class="tab-pane active" id="day" data-type="daily">
 										<!-- Filtro por dia -->
 										<label>Data (por dia): </label>
 										<input class="date-input date-range-picker form-control"/>
 									</div>
 
-									<div role="tabpanel" class="tab-pane" id="month" data-type="month">
+									<div role="tabpanel" class="tab-pane" id="month" data-type="monthly">
 										<!-- Filtro por mês -->
 										<label>Data (por mês): </label>
 										<input class="date-input year-month-range-past hidden"/>
@@ -150,6 +150,20 @@
 										<option value="{{acronym}}">{{ v }}</option>
 									{% endfor %}
 									<option value="money">R$</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-sm-12">
+								<label>Equipamento: </label>
+
+								<select class="equipment">
+									<option value="">Todos</option>
+									{% for equip in equipments %}
+										<option value="{{equip.pk}}">{{ equip.name }}</option>
+									{% endfor %}
+
 								</select>
 							</div>
 						</div>
