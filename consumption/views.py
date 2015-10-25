@@ -258,9 +258,13 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 
 	if goal ==  "true":
 		goalList = []
-		goals = Goal.objects.filter(yearmonth_start__gte = start, yearmonth_end__lte = end) | \
-						Goal.objects.filter(yearmonth_start__lte = start, yearmonth_start__gte = start) | \
-						Goal.objects.filter(yearmonth_start__lte = end, yearmonth_start__gte = end)
+		qs = Goal.objects
+		if equipmentId:
+			qs.filter(equipment=Equipment.objects.filter(pk=equipmenId))
+
+		goals = qs.filter(yearmonth_start__gte = start, yearmonth_end__lte = end) | \
+						qs.filter(yearmonth_start__lte = start, yearmonth_start__gte = start) | \
+						qs.filter(yearmonth_start__lte = end, yearmonth_start__gte = end)
 
 		for point in return_json:
 			newPoint = [point[0], 0]
