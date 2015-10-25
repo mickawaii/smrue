@@ -4,6 +4,8 @@ from django.forms import ModelForm
 from django import forms
 from goal.models import Goal
 from equipment.models import Equipment
+from consumption.models import Consumption
+
 from django.contrib.auth.models import Group, User
 
 class GoalForm(ModelForm):
@@ -17,4 +19,4 @@ class GoalForm(ModelForm):
   class Meta:
       model = Goal
       fields = ['name', 'value_in_percent', 'yearmonth_range', 'equipment', 'yearmonth_start', 'yearmonth_end']
-      exclude = ('created_at', 'updated_at')
+      exclude = ('created_at', 'updated_at', 'value_absolute')

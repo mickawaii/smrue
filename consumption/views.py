@@ -83,7 +83,7 @@ def importCSV(request):
 
 		except ValueError as e3:
 			url = reverse('consumption:graphic')
-			import pdb; pdb.set_trace()
+			
 			messages.error(request, "Linha "  + str(lineNumber) + ": " + str(e3))
 			return HttpResponseRedirect(url)
 
@@ -185,6 +185,7 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 	dateFormat = "%Y-%m-%d"
 	qs = Consumption.objects
 
+	returnPlots = []
 
 	if equipmentId:
 		if equipmentId != "":
@@ -219,6 +220,9 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), set['voltage_avg'] * set['current_avg']], 
 				qs
 		)
+
+	
+
 	if unit == "money":
 		date1 = AESRate.objects.filter(valid_date__lte=start, name=income_type).order_by("-valid_date").first().valid_date
 		date2 = end
@@ -250,13 +254,13 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 				return_json
 		)
 
+	returnPlots.append(return_json)
 
-	if goal:
+	if goal ==  "true":
+		goalList = []
 		goals = Goal.objects.filter(yearmonth_start__gte = start, yearmonth_end__lte = end) | \
 						Goal.objects.filter(yearmonth_start__lte = start, yearmonth_start__gte = start) | \
 						Goal.objects.filter(yearmonth_start__lte = end, yearmonth_start__gte = end)
-
-		goalList = []
 
 		for point in return_json:
 			newPoint = [point[0], 0]
@@ -265,11 +269,9 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 			for goal in goals:
 				if goal.yearmonth_start <= pointDate:
 					if goal.yearmonth_end <= pointDate:
-						newPoint[1] = goal.value_in_percent
+						newPoint[1] = goal.value_absolute
 
 			goalList.append(newPoint)
+		returnPlots.append(goalList)
 
-		return_json = [return_json, goalList]
-
-	import pdb; pdb.set_trace()
-	return return_json
+	return returnPlots
