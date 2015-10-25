@@ -132,11 +132,12 @@ def ajaxPlot(request):
 			# dateTimeEnd = "01-10-2014"
 			equipmentId = request.GET.get("equipmentId", None)
 			income_type = request.user.profile.income_type
+			integrate = request.GET.get("integrate", False)
 			# equipment = None
 			# if equipmentId:
 			# 	equipment = Equipment.objects.get(pk=equipmentId)
 
-			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal)
+			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal, integrate)
 
 			return HttpResponse(json.dumps({'plots': return_json}), content_type="application/json")
 		except Exception as e:
@@ -174,18 +175,55 @@ def create(request):
 		print(error)
 		return HttpResponse(status=500)
 
-def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal):
-	aggregatedQuery= None
-	return_json = None
-	# 0.001 para kW
-	mult = 0.001 if unit == Equipment.MEASUREMENT_UNITS[1][0] else 1
-	timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
-	start = datetime.strptime(dateTimeStart,timeFormat)
-	end = datetime.strptime(dateTimeEnd,timeFormat)
-	dateFormat = "%Y-%m-%d"
-	qs = Consumption.objects
 
-	returnPlots = []
+def formatToMoney(plotData, unit, start, end, mult):
+	if unit == "money":
+		date1 = AESRate.objects.filter(valid_date__lte=start, name=income_type).order_by("-valid_date").first().valid_date
+		date2 = end
+		rates = AESRate.objects.filter(valid_date__gte=date1, valid_date__lt=date2, name=income_type).order_by("-valid_date").values("range_start", "range_end", "te", "tusd", "valid_date")
+
+		for index, item in enumerate(plotData):
+			date_found = False
+
+			for rate in rates:
+
+				if rate["valid_date"] <= datetime.strptime(plotData[index][0], "%Y-%m-%d").date() and not date_found:
+					date_found = True
+
+					# comparando os valores -> passando para kw
+					if rate["range_start"]:
+						if plotData[index][1]*0.001 < rate["range_start"]:
+							date_found = False
+							
+					if rate["range_end"]:
+						if plotData[index][1]*0.001 > rate["range_end"]:
+							date_found = False
+
+					if date_found:
+						plotData[index][1] = plotData[index][1] * float(rate["tusd"] + rate["te"]) * mult
+
+	else:
+		plotData = map(lambda set: 
+			[set[0], set[1] * mult], 
+				plotData
+		)
+
+def formatIntegrate(plotData, integrate):
+	import pdb; pdb.set_trace()
+	plotData = sorted(plotData, key=lambda x: x[0])
+	if integrate:
+		if integrate == True or integrate in ["true", "True"]:
+			sum = 0
+			for index in range(len(plotData)):
+				if index == 0:
+					sum = plotData[0][1]
+				else:
+					sum = sum + plotData[index][1]
+					plotData[index][1] = sum
+
+def getConsumptionData(timeRange, dateFormat, equipmentId, unit, start, end, mult, integrate):
+	return_json = None
+	qs = Consumption.objects
 
 	if equipmentId:
 		if equipmentId != "":
@@ -221,61 +259,52 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 				qs
 		)
 
-	
+	formatToMoney(return_json, unit, start, end, mult)
 
-	if unit == "money":
-		date1 = AESRate.objects.filter(valid_date__lte=start, name=income_type).order_by("-valid_date").first().valid_date
-		date2 = end
-		rates = AESRate.objects.filter(valid_date__gte=date1, valid_date__lt=date2, name=income_type).order_by("-valid_date").values("range_start", "range_end", "te", "tusd", "valid_date")
+	formatIntegrate(return_json, integrate)
 
-		for index, item in enumerate(return_json):
-			date_found = False
+	return return_json
 
-			for rate in rates:
+def getGoalData(equipmentId, consumptionData, dateFormat):
+	goalList = []
+	qs = Goal.objects
+	if equipmentId:
+		qs.filter(equipment=Equipment.objects.filter(pk=equipmenId))
 
-				if rate["valid_date"] <= datetime.strptime(return_json[index][0], "%Y-%m-%d").date() and not date_found:
-					date_found = True
+	goals = qs.filter(yearmonth_start__gte = start, yearmonth_end__lte = end) | \
+					qs.filter(yearmonth_start__lte = start, yearmonth_start__gte = start) | \
+					qs.filter(yearmonth_start__lte = end, yearmonth_start__gte = end)
 
-					# comparando os valores -> passando para kw
-					if rate["range_start"]:
-						if return_json[index][1]*0.001 < rate["range_start"]:
-							date_found = False
-							
-					if rate["range_end"]:
-						if return_json[index][1]*0.001 > rate["range_end"]:
-							date_found = False
+	for point in consumptionData:
+		newPoint = [point[0], 0]
+		pointDate = datetime.strptime(point[0], dateFormat)
 
-					if date_found:
-						return_json[index][1] = return_json[index][1] * float(rate["tusd"] + rate["te"]) * mult
+		for goal in goals:
+			if goal.yearmonth_start <= pointDate:
+				if goal.yearmonth_end <= pointDate:
+					newPoint[1] = goal.value_absolute
 
-	else:
-		return_json = map(lambda set: 
-			[set[0], set[1] * mult], 
-				return_json
-		)
+		goalList.append(newPoint)
 
-	returnPlots.append(return_json)
+def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal, integrate):
+	aggregatedQuery= None
+	# 0.001 para kW
+	mult = 0.001 if unit == Equipment.MEASUREMENT_UNITS[1][0] else 1
+	timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
+	start = datetime.strptime(dateTimeStart,timeFormat)
+	end = datetime.strptime(dateTimeEnd,timeFormat)
+	dateFormat = "%Y-%m-%d"
+
+	returnPlots = []
+
+	consumptionData = getConsumptionData(timeRange, dateFormat, equipmentId, unit, start, end, mult, integrate)
+
+	returnPlots.append(consumptionData)
 
 	if goal ==  "true":
-		goalList = []
-		qs = Goal.objects
-		if equipmentId:
-			qs.filter(equipment=Equipment.objects.filter(pk=equipmenId))
+		goalData = getGoalData(equipmentId, consumptionData, dateFormat)
+		returnPlots.append(goalData)
 
-		goals = qs.filter(yearmonth_start__gte = start, yearmonth_end__lte = end) | \
-						qs.filter(yearmonth_start__lte = start, yearmonth_start__gte = start) | \
-						qs.filter(yearmonth_start__lte = end, yearmonth_start__gte = end)
 
-		for point in return_json:
-			newPoint = [point[0], 0]
-			pointDate = datetime.strptime(point[0], dateFormat)
-
-			for goal in goals:
-				if goal.yearmonth_start <= pointDate:
-					if goal.yearmonth_end <= pointDate:
-						newPoint[1] = goal.value_absolute
-
-			goalList.append(newPoint)
-		returnPlots.append(goalList)
 
 	return returnPlots
