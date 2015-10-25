@@ -209,7 +209,6 @@ def formatToMoney(plotData, unit, start, end, mult):
 		)
 
 def formatIntegrate(plotData, integrate):
-	import pdb; pdb.set_trace()
 	plotData = sorted(plotData, key=lambda x: x[0])
 	if integrate:
 		if integrate == True or integrate in ["true", "True"]:

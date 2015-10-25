@@ -36,7 +36,6 @@ class Goal(models.Model):
 
 	def save(self, force_insert=False, force_update=False):
 		qs = Consumption.objects.values('moment', 'current', 'voltage').filter(moment__month=datetime.now().month, equipment=self.equipment)
-		import pdb; pdb.set_trace()
 		self.value_absolute = self.value_in_percent * decimal.Decimal(sum(map(lambda set: 
 			set['voltage'] * set['current'], 
 			qs
