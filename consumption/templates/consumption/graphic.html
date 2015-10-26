@@ -64,8 +64,7 @@
 		</ul>
 	{% endif %}
 
-	<div class="row">
-		
+	<div class="row">		
 		{% if income_type %}
 			<div class="col-sm-12">
 				<div id="chart"></div>
@@ -108,9 +107,9 @@
 										<label>Data (por mês): </label>
 										<input class="date-input year-month-range-past hidden"/>
 
-										<div class="year-month-range-picker-past">
+										<div class="year-month-range-picker-past form-inline">
 											<input type="text" class="input-small start form-control"/>
-											<span class="add-on">to</span>
+											<span class="add-on">até</span>
 											<input type="text" class="input-small end form-control"/>
 										</div>
 									</div>
@@ -142,14 +141,14 @@
 						</div>
 
 						<div class="row">
-							<div class="col-sm-12">
+							<div class="col-sm-12 form-inline">
 								<label>Unidade de medida: </label>
 
-								<select class="unit">
+								<select class="unit form-control">
 									{% for acronym, v in measurement_units %}
-										<option data-label="Potência" value="{{acronym}}">{{ v }}</option>
+										<option data-label="Potência" data-yformat="%.3f {{acronym}}" value="{{acronym}}">{{ v }}</option>
 									{% endfor %}
-									<option data-label="R$" value="money">R$</option>
+									<option data-label="R$" data-yformat="R$ %.2f" value="money">R$</option>
 								</select>
 							</div>
 						</div>
@@ -166,8 +165,9 @@
 					<div class="panel-body">
 						<form action="{% url 'consumption:importCSV' %}" method="POST" enctype="multipart/form-data" id="uploadform">
 							{% csrf_token %}
+							<div class="form-group">
 							<label>Escolha um arquivo:</label><input name="csv" type="file">
-
+							</div>
 							{% if csv_error %}
 								{{csv_error}}
 							{% endif %}
@@ -175,6 +175,8 @@
 								<input type="submit" class="btn btn-info" value="Importar">
 							</div>
 						</form>
+
+						<hr>
 
 						<form action="{% url 'consumption:exportCSV' %}" method="GET" enctype="multipart/form-data" id="uploadform">
 							{% csrf_token %}

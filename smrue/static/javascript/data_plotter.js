@@ -353,6 +353,17 @@ $(function(){
 
 	};
 
+	var validateConfig = function(){
+		$(integrateInputSelector).change(function(){
+			if($(this).is(":checked")){
+				$(measurementInputSelector).find("option[value='money']").removeAttr("disabled");
+			} else {
+				$(measurementInputSelector).find("option:first").attr("selected", "selected	");
+				$(measurementInputSelector).find("option[value='money']").attr("disabled", "disabled");
+			}
+		})
+	}
+
 	/*
 	data:
 	xStart: data de inicio (String)
@@ -378,8 +389,8 @@ $(function(){
 	var replotPlot = function(plots, timeRange){
 		var plotTitle = "";
 		var xFormat = "";
-		var measurement = $(measurementInputSelector).find("option:selected").text();
 		var label = $(measurementInputSelector).find("option:selected").data("label");
+		var yFormat = $(measurementInputSelector).find("option:selected").data("yformat");
 
 		if(timeRange == "hourly"){
 			plotTitle = hourlyTitle;
@@ -391,8 +402,6 @@ $(function(){
 			plotTitle = monthlyTitle;
 			xFormat = "%M/%y";
 		};
-
-		console.log(xFormat);
 
 		var newOptions = 
 			{
@@ -408,7 +417,7 @@ $(function(){
 					yaxis:{
 						label: label,
 						tickOptions:{
-							formatString: '%.3f '+measurement
+							formatString: yFormat
 						}
 					}
 				}
@@ -438,5 +447,9 @@ $(function(){
 		});
 	});
 
-	$(".date-range-picker").val("01/09/2014 - 01/10/2014");
+	$(".date-range-picker").val("01/04/2015 - 01/06/2015");
+	$(".unit").val("money");
+
+	validateConfig();
+	$(buttonSelector).click();
 })

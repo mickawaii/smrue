@@ -178,6 +178,7 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 	# 0.001 para kW
 	mult = 0.001 if unit == Equipment.MEASUREMENT_UNITS[1][0] else 1
 	timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
+
 	start = datetime.strptime(dateTimeStart,timeFormat)
 	end = datetime.strptime(dateTimeEnd,timeFormat)
 	dateFormat = "%Y-%m-%d"
@@ -215,17 +216,27 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), set['voltage_avg'] * set['current_avg']], 
 				qs
 		)
+
+		print return_json
+
 	if unit == "money":
-		date1 = AESRate.objects.filter(valid_date__lte=start, name=income_type).order_by("-valid_date").first().valid_date
+		# último aes antes da primeira data escolhida
+		first_aes = AESRate.objects.filter(valid_date__lte=start, name=income_type).order_by("-valid_date").first()
+
+		if first_aes:
+			date1 = first_aes.valid_date
+		else:
+			date1 = start
 		date2 = end
-		rates = AESRate.objects.filter(valid_date__gte=date1, valid_date__lt=date2, name=income_type).order_by("-valid_date").values("range_start", "range_end", "te", "tusd", "valid_date")
+
+		rates = AESRate.objects.filter(valid_date__gte=date1, valid_date__lte=date2, name=income_type).order_by("-valid_date").values("range_start", "range_end", "te", "tusd", "valid_date")
 
 		for index, item in enumerate(return_json):
 			date_found = False
 
 			for rate in rates:
 
-				if rate["valid_date"] <= datetime.strptime(return_json[index][0], "%Y-%m-%d").date() and not date_found:
+				if rate["valid_date"] <= datetime.strptime(return_json[index][0], dateFormat).date() and not date_found:
 					date_found = True
 
 					# comparando os valores -> passando para kw
