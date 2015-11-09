@@ -282,9 +282,6 @@ $(function(){
 	var callApiRequest;
 	var chartId = "chart";
 	var loadingGif = "<div class='loading-gif'></div>";
-	var dailyTitle = 'Potência x Dia';
-	var hourlyTitle = 'Potência x Hora';
-	var monthlyTitle = 'Potência x Mes';
 
 	/*
 	Seletores dos inputs do form do gráfico. Usados como selectors do JQuery
@@ -436,6 +433,8 @@ $(function(){
 		var showGoals = $(goalInputSelector).is(":checked");
 		var equipmentId = $(equipmentSelector).val();
 		var noDataMessage = "<p class='chart-error'>Não há dados de consumo para o equipamento selecionado.</p>"
+
+		console.log
 		data = {
 			"xStart": xStart,
 			"xEnd": xEnd,
@@ -456,7 +455,7 @@ $(function(){
 		
 	});
 
-	$(".date-time-range-picker").val("01/04/2015 0:00 - 02/04/2015 18:00");
+	// $(".date-time-range-picker").val("01/04/2015 0:00 - 02/04/2015 18:00");
 	// $(".date-range-picker").val("01/04/2015 - 01/06/2015");
 	// $(".unit").val("money");
 

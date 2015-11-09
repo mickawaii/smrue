@@ -151,17 +151,16 @@ def ajaxPlot(request):
 		try:
 			goal = request.GET.get("goal", False)
 			timeRange = request.GET.get("timeRange", "daily")
-			unit = request.GET.get("measurement", "kw")
-
 			timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
-
+			unit = request.GET.get("measurement", "kw")
 			dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
 			dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
-			# dateTimeStart = "01-09-2014"
-			# dateTimeEnd = "01-10-2014"
 			equipmentId = request.GET.get("equipmentId", None)
-			income_type = request.user.profile.income_type
 			integrate = request.GET.get("integrate", False)
+
+			print "goal: %s \ndateTimeStart: %s \ndateTimeEnd: %s \n" % (timerange, dateTimeStart, dateTimeEnd)
+
+			income_type = request.user.profile.income_type
 			# equipment = None
 			# if equipmentId:
 			# 	equipment = Equipment.objects.get(pk=equipmentId)
@@ -255,7 +254,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 		qs = qs.filter(moment__gte=start, moment__lte=end)
 		qs = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month')
 		qs = qs.annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('month', 'year', 'current_avg', 'voltage_avg')
-		dateFormat = "%Y-%m"
+		dateFormat = "%Y-%m-%d"
 
 		return_json = map(lambda set: 
 			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), set['voltage_avg'] * set['current_avg']], 
