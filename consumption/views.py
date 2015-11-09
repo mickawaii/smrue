@@ -43,6 +43,7 @@ class GraphicView(TemplateView):
 
 		context["measurement_units"] = Equipment.MEASUREMENT_UNITS
 		context["months"] = ((1, "Janeiro"),(2, "Fevereiro"),(3, "Março"),(4, "Abril"),(5, "Maio"),(6, "Junho"),(7, "Julho"),(8, "Agosto"),(9, "Setembro"),(10, "Outubro"),(11, "Novembro"),(12, "Dezembro"))
+		context["equipments"] = Equipment.objects.all()
 		return context
 
 def get_first_day_of_month(dt, d_years=0, d_months=0):
@@ -53,6 +54,37 @@ def get_first_day_of_month(dt, d_years=0, d_months=0):
 
 def get_last_day_of_month(dt):
 	return get_first_day_of_month(dt, 0, 1) + timedelta(-1)
+
+# Parâmetros usados:
+	# code: código do sensor
+	# voltage: medida de voltagem
+	# current: corrente medida
+def create(request):
+	try:
+		if request.method == 'POST':
+			code = request.POST.get("code", "").encode("utf-8")
+			print(code)
+			current = request.POST.get("current", -1.0);
+			voltage = request.POST.get("voltage", -1.0);
+
+			sensor = None
+
+			try:
+				sensor = Sensor.objects.get(code=code)
+			except Sensor.DoesNotExist:
+				sensor = Sensor.objects.create(code=code, name="template" + unicode(datetime.now()))
+				sensor.save()
+
+			if current > 0:
+				if voltage > 0:
+					Consumption.new(datetime.now(), current, voltage, sensor.equipment.id).save()
+
+			return HttpResponse(status=201)
+		else	:
+			return HttpResponse(status=404)
+	except Exception as e:
+		print(error)
+		return HttpResponse(status=500)
 
 def importCSV(request):
 	if request.method == 'POST': # If the form has been submitted...
@@ -82,7 +114,7 @@ def importCSV(request):
 
 		except ValueError as e3:
 			url = reverse('consumption:graphic')
-			import pdb; pdb.set_trace()
+			
 			messages.error(request, "Linha "  + str(lineNumber) + ": " + str(e3))
 			return HttpResponseRedirect(url)
 
@@ -117,75 +149,87 @@ def exportCSV(request):
 def ajaxPlot(request):
 	if request.method == 'GET':
 		try:
-			goal = request.GET.get("goal", True)
+			goal = request.GET.get("goal", False)
 			timeRange = request.GET.get("timeRange", "daily")
-			timeRange = "daily"
 			unit = request.GET.get("measurement", "kw")
 
-			# unit = "money"
 			timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
+
 			dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
 			dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
 			# dateTimeStart = "01-09-2014"
 			# dateTimeEnd = "01-10-2014"
 			equipmentId = request.GET.get("equipmentId", None)
 			income_type = request.user.profile.income_type
+			integrate = request.GET.get("integrate", False)
 			# equipment = None
 			# if equipmentId:
 			# 	equipment = Equipment.objects.get(pk=equipmentId)
 
-			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type)
+			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal, integrate)
 
-			return HttpResponse(json.dumps({'plots': [return_json]}), content_type="application/json")
+			return HttpResponse(json.dumps({'plots': return_json}), content_type="application/json")
 		except Exception as e:
 			print unicode(e.message)
 			return HttpResponse(json.dumps({'plots': [[[]]]}), content_type="application/json")
 
-# Parâmetros usados:
-	# code: código do sensor
-	# voltage: medida de voltagem
-	# current: corrente medida
-def create(request):
-	try:
-		if request.method == 'POST':
-			code = request.POST.get("code", "").encode("utf-8")
-			print(code)
-			current = request.POST.get("current", -1.0);
-			voltage = request.POST.get("voltage", -1.0);
+def formatToMoney(plotData, unit, start, end, mult, income_type):
+	if unit == "money":
+		# último aes antes da primeira data escolhida
+		first_aes = AESRate.objects.filter(valid_date__lte=start, name=income_type).order_by("-valid_date").first()
 
-			sensor = None
+		if first_aes:
+			date1 = first_aes.valid_date
+		else:
+			date1 = start
+		date2 = end
+		rates = AESRate.objects.filter(valid_date__gte=date1, valid_date__lte=date2, name=income_type).order_by("-valid_date").values("range_start", "range_end", "te", "tusd", "valid_date")
 
-			try:
-				sensor = Sensor.objects.get(code=code)
-			except Sensor.DoesNotExist:
-				sensor = Sensor.objects.create(code=code, name="template" + unicode(datetime.now()))
-				sensor.save()
+		for index, item in enumerate(plotData):
+			date_found = False
 
-			if current > 0:
-				if voltage > 0:
-					Consumption.new(datetime.now(), current, voltage, sensor.equipment.id).save()
+			for rate in rates:
 
-			return HttpResponse(status=201)
-		else	:
-			return HttpResponse(status=404)
-	except Exception as e:
-		print(error)
-		return HttpResponse(status=500)
+				if rate["valid_date"] <= datetime.strptime(plotData[index][0], "%Y-%m-%d").date() and not date_found:
+					date_found = True
 
-def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type):
-	aggregatedQuery= None
+					# comparando os valores -> passando para kw
+					if rate["range_start"]:
+						if plotData[index][1]*0.001 < rate["range_start"]:
+							date_found = False
+							
+					if rate["range_end"]:
+						if plotData[index][1]*0.001 > rate["range_end"]:
+							date_found = False
+
+					# se não mudou, não achou data
+					if date_found:
+						# ele está em w -> passando para kw
+						plotData[index][1] = plotData[index][1] * float(rate["tusd"] + rate["te"]) * 0.001
+
+	else:
+		for index, item in enumerate(plotData):
+			plotData[index][1] = plotData[index][1] * mult
+
+def formatIntegrate(plotData, integrate):
+	plotData = sorted(plotData, key=lambda x: x[0])
+	if integrate:
+		if integrate == True or integrate in ["true", "True"]:
+			sum = 0
+			for index in range(len(plotData)):
+				if index == 0:
+					sum = plotData[0][1]
+				else:
+					sum = sum + plotData[index][1]
+					plotData[index][1] = sum
+
+def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate, income_type):
 	return_json = None
-	# 0.001 para kW
-	mult = 0.001 if unit == Equipment.MEASUREMENT_UNITS[1][0] else 1
-	timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
-
-	start = datetime.strptime(dateTimeStart,timeFormat)
-	end = datetime.strptime(dateTimeEnd,timeFormat)
-	dateFormat = "%Y-%m-%d"
 	qs = Consumption.objects
 
 	if equipmentId:
-		qs = qs.filter(equipment_id=equipmentId)
+		if equipmentId != "":
+			qs = qs.filter(equipment_id=equipmentId)
 
 	if timeRange == "hourly":
 		qs = qs.values('moment', 'current', 'voltage').filter(moment__range=[start, end])
@@ -199,6 +243,7 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 	elif timeRange == "daily":
 		end = end + timedelta(days=1)
 		qs = qs.filter(moment__gte=start, moment__lt=end).extra({'moment': "date(moment)"}).values('moment').annotate(current=Avg('current'), voltage=Avg('voltage'))
+		dateFormat = "%Y-%m-%d"
 
 		return_json = map(lambda set: 
 			[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
@@ -217,44 +262,53 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 				qs
 		)
 
-		print return_json
+	formatToMoney(return_json, unit, start, end, mult, income_type)
 
-	if unit == "money":
-		# último aes antes da primeira data escolhida
-		first_aes = AESRate.objects.filter(valid_date__lte=start, name=income_type).order_by("-valid_date").first()
-
-		if first_aes:
-			date1 = first_aes.valid_date
-		else:
-			date1 = start
-		date2 = end
-
-		rates = AESRate.objects.filter(valid_date__gte=date1, valid_date__lte=date2, name=income_type).order_by("-valid_date").values("range_start", "range_end", "te", "tusd", "valid_date")
-
-		for index, item in enumerate(return_json):
-			date_found = False
-
-			for rate in rates:
-
-				if rate["valid_date"] <= datetime.strptime(return_json[index][0], dateFormat).date() and not date_found:
-					date_found = True
-
-					# comparando os valores -> passando para kw
-					if rate["range_start"]:
-						if return_json[index][1]*0.001 < rate["range_start"]:
-							date_found = False
-							
-					if rate["range_end"]:
-						if return_json[index][1]*0.001 > rate["range_end"]:
-							date_found = False
-
-					if date_found:
-						return_json[index][1] = return_json[index][1] * float(rate["tusd"] + rate["te"]) * mult
-
-	else:
-		return_json = map(lambda set: 
-			[set[0], set[1] * mult], 
-				return_json
-		)
+	formatIntegrate(return_json, integrate)
 
 	return return_json
+
+def getGoalData(equipmentId, consumptionData, dateFormat, start, end):
+	goalList = []
+	qs = Goal.objects
+	if equipmentId:
+		qs.filter(equipment=Equipment.objects.filter(pk=equipmentId))
+
+	goals = qs.filter(yearmonth_start__gte = start, yearmonth_end__lte = end) | \
+					qs.filter(yearmonth_start__lte = start, yearmonth_start__gte = start) | \
+					qs.filter(yearmonth_start__lte = end, yearmonth_start__gte = end)
+
+	for point in consumptionData:
+		newPoint = [point[0], 0]
+		pointDate = datetime.strptime(point[0], dateFormat)
+
+		for goal in goals:
+			if goal.yearmonth_start <= pointDate:
+				if goal.yearmonth_end <= pointDate:
+					newPoint[1] = goal.value_absolute
+
+		goalList.append(newPoint)
+
+	return goalList
+
+def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal, integrate):
+	aggregatedQuery= None
+	# 0.001 para kW
+	mult = 0.001 if unit == Equipment.MEASUREMENT_UNITS[1][0] else 1
+	timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
+	start = datetime.strptime(dateTimeStart,timeFormat)
+	end = datetime.strptime(dateTimeEnd,timeFormat)
+	dateFormat = "%Y-%m-%d"
+
+	returnPlots = []
+
+	consumptionData = getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate, income_type)
+
+	returnPlots.append(consumptionData)
+
+	if goal ==  "true":
+		# ver direito o dateFormat...
+		goalData = getGoalData(equipmentId, consumptionData, dateFormat, start, end)
+		returnPlots.append(goalData)
+
+	return returnPlots

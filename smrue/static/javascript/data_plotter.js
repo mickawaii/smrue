@@ -13,8 +13,8 @@ $(function(){
 
 	// var hourlyFromTimeSelector = "input.from-time";
 	// var hourlyToTimeSelector = "input.to-time";
-	var unitSelecSelector =  "select.unit";
-	var unit = $(unitSelecSelector).find(":selected").text();
+	// var unitSelecSelector =  "select.unit";
+	// var unit = $(unitSelecSelector).find(":selected").text();
 	// var valueIndex = 1;
 	// var dateIndex = 0;
 	// var data = null;
@@ -298,9 +298,11 @@ $(function(){
 	*/
 	var dateInputSelector = ".tab-pane.active .date-input";
 	var measurementInputSelector = ".unit";
+	var equipmentSelector = ".equipment";
 	var timeRangeInputSelector = ".tab-pane.active";
 	var goalInputSelector = "#boolean-goal";
 	var integrateInputSelector = "#boolean-integrate";
+	
 	var buttonSelector = ".plot-button";
 	var plotUrl = $(buttonSelector).data("url");
 	
@@ -392,14 +394,12 @@ $(function(){
 		var label = $(measurementInputSelector).find("option:selected").data("label");
 		var yFormat = $(measurementInputSelector).find("option:selected").data("yformat");
 
+		plotTitle = label+" x Data";
 		if(timeRange == "hourly"){
-			plotTitle = hourlyTitle;
-			xFormat = "%d/%M/%y %H:%M";
+			xFormat = "%d/%m/%y %H:%M";
 		} else if (timeRange == "daily") {
-			plotTitle = dailyTitle;
-			xFormat = "%d/%M/%y";
+			xFormat = "%d/%m/%y";
 		} else if (timeRange == "monthly") {
-			plotTitle = monthlyTitle;
 			xFormat = "%M/%y";
 		};
 
@@ -408,6 +408,7 @@ $(function(){
 				title: plotTitle,
 				axes:{
 					xaxis:{
+						pad: 1.0,
 						label: 'Data',
 						renderer: $.jqplot.DateAxisRenderer,
 						tickOptions:{
@@ -433,22 +434,31 @@ $(function(){
 		var timeRange = $(timeRangeInputSelector).data("type");
 		var yIntegrate = $(integrateInputSelector).is(":checked");
 		var showGoals = $(goalInputSelector).is(":checked");
+		var equipmentId = $(equipmentSelector).val();
+		var noDataMessage = "<p class='chart-error'>Não há dados de consumo para o equipamento selecionado.</p>"
 		data = {
 			"xStart": xStart,
 			"xEnd": xEnd,
 			"timeRange": timeRange,
 			"goal": showGoals,
 			"integrate": yIntegrate,
-			"measurement": measurement
+			"measurement": measurement,
+			"equipmentId": equipmentId
 		}
 		callApi(data);
 		callApiRequest.success(function(response){
-			replotPlot(response.plots, timeRange);
+			if (response.plots[0].length == 0){
+				$("#"+chartId).html(noDataMessage);
+			} else {
+				replotPlot(response.plots, timeRange);
+			}
 		});
+		
 	});
 
-	$(".date-range-picker").val("01/04/2015 - 01/06/2015");
-	$(".unit").val("money");
+	$(".date-time-range-picker").val("01/04/2015 0:00 - 02/04/2015 18:00");
+	// $(".date-range-picker").val("01/04/2015 - 01/06/2015");
+	// $(".unit").val("money");
 
 	validateConfig();
 	$(buttonSelector).click();
