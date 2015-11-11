@@ -7,55 +7,8 @@
 {% endblock %}
 
 {% block css %}
-	<style type="text/css">
-		.equipment {
-			width: 200px;
-			margin-right: 20px;
-			text-align: center;
-			background: rgb(146, 225, 231);
-			margin-bottom: 15px;
-		}
-
-		.sensor-container {
-			text-align: center;
-			height: 80px;
-			background: rgb(226, 237, 255);
-		}
-
-		.sensor-container .sensor {
-			margin: 0 auto;
-		}
-
-		.free-sensors-container {
-		}
-
-		.free-sensors-container .sensor {
-			float: left;
-		}
-
-		.sensor {
-			cursor: pointer;
-			text-align: center;
-			width: 100px;
-			height: 80px;
-			background: yellow;
-		}
-
-		.sensor .glyphicon {
-			font-size: 50px;
-			display: block;
-		}
-
-		.ui-sortable-placeholder { 
-			visibility: visible !important; 
-			background: gray;
-		}
-
-		.sensor-container .ui-sortable-placeholder {
-			height: 0px !important;
-		}
-
-	</style>
+{% static "configuration/css.css" as configuration_css %}
+<link href="{{configuration_css}}" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -94,12 +47,12 @@
 						<div class="col-sm-9" id="js-equipments-container">
 							{% for equipment in equipments %}
 								<div class="equipment col-sm-3" data-id="{{equipment.id}}">
-									{{equipment.name}}
-
+									<div class="sensor-name">
+										{{equipment.name}}
+									</div>	
 									<div class="js-sensor-container sensor-container">
 										{% if equipment.sensor %}
 											<div class="sensor" data-id="{{equipment.sensor.id}}">
-												<i class="glyphicon glyphicon-collapse-up"></i>
 												{{equipment.sensor.name}}
 											</div>
 										{% endif %}
@@ -117,12 +70,12 @@
 						<div class="col-sm-9 free-sensors-container" id="js-free-sensors-container">
 							{% for sensor in free_sensors %}
 								<div class="sensor" data-id="{{sensor.id}}">
-									<i class="glyphicon glyphicon-collapse-up"></i>
 									{{sensor.name}}
 								</div>
-							{% empty %}
-								Não há sensores registrados
 							{% endfor %}
+							{% if not has_sensors %}
+								Não há sensores registrados
+							{% endif %}
 						</div>
 						<div class="clearfix"></div>
 					</div>

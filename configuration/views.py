@@ -47,6 +47,8 @@ class ConfigView(TemplateView):
 
 		context['equipments'] = Equipment.objects.all()
 
+		context['has_sensors'] = Sensor.objects.count() > 0
+
 		context['free_sensors'] = Sensor.objects.filter(equipment_id__isnull=True)
 
 		return context

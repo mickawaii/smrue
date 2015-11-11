@@ -1,0 +1,62 @@
+.equipment {
+	width: 172px;
+	margin-right: 20px;
+	text-align: center;
+	background-image: url("/static/images/equipment.jpg");
+	background-repeat: no-repeat;
+	margin-bottom: 15px;
+}
+
+.equipment .sensor-name {
+	height: 109px;
+	width: 142px;
+	padding-top: 20px;
+	color: white;
+	font-weight: bold;
+}
+
+.sensor-container {
+	text-align: center;
+	min-height: 104px;
+}
+
+.sensor-container .sensor {
+	padding-top: 84px;
+	margin: 0 auto;
+}
+
+.free-sensors-container{
+    min-height: 104px;
+    min-width: 120px;
+}
+
+.free-sensors-container .sensor {
+	float: left;
+    padding-top: 84px;
+    width: 120px;
+}
+
+.sensor {
+	cursor: pointer;
+	text-align: center;
+	width: 79px;
+    background-image: url("/static/images/sensor.png");
+    background-repeat: no-repeat;
+    background-position: center top;
+    font-size: 11px;
+}
+
+.sensor .glyphicon {
+	font-size: 50px;
+	display: block;
+}
+
+.ui-sortable-placeholder { 
+	visibility: visible !important; 
+	background: none;
+	border: 1px dashed gray;
+}
+
+.sensor-container .ui-sortable-placeholder {
+	height: 0px !important;
+}
