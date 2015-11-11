@@ -4,8 +4,10 @@
 }
 
 .chart-error {
-	font-size: 28px;
+	font-size: 25px;
+    width: 500px;
     text-align: center;
+    margin: 0 auto;
     color: rgba(128, 128, 128, 0.51);
     padding-top: 131px;
 }

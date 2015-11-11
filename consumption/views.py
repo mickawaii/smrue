@@ -158,13 +158,7 @@ def ajaxPlot(request):
 			equipmentId = request.GET.get("equipmentId", None)
 			integrate = request.GET.get("integrate", False)
 
-			print "goal: %s \ndateTimeStart: %s \ndateTimeEnd: %s \n" % (timerange, dateTimeStart, dateTimeEnd)
-
 			income_type = request.user.profile.income_type
-			# equipment = None
-			# if equipmentId:
-			# 	equipment = Equipment.objects.get(pk=equipmentId)
-
 			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal, integrate)
 
 			return HttpResponse(json.dumps({'plots': return_json}), content_type="application/json")

@@ -432,9 +432,8 @@ $(function(){
 		var yIntegrate = $(integrateInputSelector).is(":checked");
 		var showGoals = $(goalInputSelector).is(":checked");
 		var equipmentId = $(equipmentSelector).val();
-		var noDataMessage = "<p class='chart-error'>Não há dados de consumo para o equipamento selecionado.</p>"
+		var noDataMessage = "<p class='chart-error'>Não há dados de consumo para o equipamento ou período selecionado.</p>"
 
-		console.log
 		data = {
 			"xStart": xStart,
 			"xEnd": xEnd,
