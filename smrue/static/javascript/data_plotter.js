@@ -424,7 +424,10 @@ $(function(){
 		var measurement = $(measurementInputSelector).val();
 		var yIntegrate = $(integrateInputSelector).is(":checked");
 		var showGoals = $(goalInputSelector).is(":checked");
-		var equipmentId = $(equipmentSelector).val();
+		var equipmentId = [];
+		$(equipmentSelector + ":checked").each(function() {
+			equipmentId.push($(this).val());
+		});
 		data = {
 			"xStart": xStart,
 			"xEnd": xEnd,

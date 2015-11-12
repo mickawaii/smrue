@@ -156,15 +156,23 @@
 
 						<div class="row">
 							<div class="col-sm-12">
-								<label>Equipamento: </label>
-
-								<select class="equipment">
-									<option value="">Todos</option>
-									{% for equip in equipments %}
-										<option value="{{equip.pk}}">{{ equip.name }}</option>
-									{% endfor %}
-
-								</select>
+								<label>Equipamentos: </label>
+							</div>
+							
+							<div class="col-sm-12">
+								<div class="checkbox-inline">
+									<label>
+										<input class="equipment" type="checkbox" value=""> Somado
+									</label>
+								</div>
+								
+								{% for equip in equipments %}
+									<div class="checkbox-inline">
+										<label>
+											<input class="equipment" type="checkbox" value="{{equip.pk}}"> {{ equip.name }}
+										</label>
+									</div>
+								{% endfor %}
 							</div>
 						</div>
 					</div>

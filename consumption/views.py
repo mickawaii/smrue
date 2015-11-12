@@ -130,12 +130,14 @@ def ajaxPlot(request):
 			dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
 			# dateTimeStart = "01-09-2014"
 			# dateTimeEnd = "01-10-2014"
-			equipmentId = request.GET.get("equipmentId", None)
+			equipmentId = request.GET.getlist("equipmentId[]", None)
 			income_type = request.user.profile.income_type
 			integrate = request.GET.get("integrate", False)
 			# equipment = None
 			# if equipmentId:
 			# 	equipment = Equipment.objects.get(pk=equipmentId)
+
+			# import pdb; pdb.set_trace()
 
 			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal, integrate)
 
@@ -226,23 +228,24 @@ def getConsumptionData(timeRange, dateFormat, equipmentId, unit, start, end, mul
 
 	if equipmentId:
 		if equipmentId != "":
-			qs = qs.filter(equipment_id=equipmentId)
+			qs = qs.filter(equipment_id__in = equipmentId)
 
 	if timeRange == "hourly":
-		qs = qs.values('moment', 'current', 'voltage').filter(moment__range=[start, end])
+		qs = qs.values('moment', 'current', 'voltage', 'equipment_id').filter(moment__range=[start, end])
 		dateFormat = "%Y-%m-%d %H:%M"
 
+
 		return_json = map(lambda set: 
-			[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
+			[set['moment'].strftime(dateFormat), set['voltage'] * set['current'], set['equipment_id']], 
 				qs
 		)
 
 	elif timeRange == "daily":
 		end = end + timedelta(days=1)
-		qs = qs.filter(moment__gte=start, moment__lt=end).extra({'moment': "date(moment)"}).values('moment').annotate(current=Avg('current'), voltage=Avg('voltage'))
+		qs = qs.filter(moment__gte=start, moment__lt=end).extra({'moment': "date(moment)"}).values('moment', 'equipment_id').annotate(current=Avg('current'), voltage=Avg('voltage'))
 
 		return_json = map(lambda set: 
-			[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
+			[set['moment'].strftime(dateFormat), set['voltage'] * set['current'], set['equipment_id']], 
 				qs
 		)
 
@@ -250,40 +253,60 @@ def getConsumptionData(timeRange, dateFormat, equipmentId, unit, start, end, mul
 		end = get_last_day_of_month(end)
 		qs = qs.filter(moment__gte=start, moment__lte=end)
 		qs = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month')
-		qs = qs.annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('month', 'year', 'current_avg', 'voltage_avg')
+		qs = qs.annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('equipment_id', 'month', 'year', 'current_avg', 'voltage_avg')
 		dateFormat = "%Y-%m"
 
 		return_json = map(lambda set: 
-			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), set['voltage_avg'] * set['current_avg']], 
+			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), set['voltage_avg'] * set['current_avg'], set['equipment_id']], 
 				qs
 		)
 
-	formatToMoney(return_json, unit, start, end, mult)
+	# Separando por id 
+	plotDatas = []
+	for id in equipmentId:
+		plot = filter(lambda x: x[2] == int(id), return_json)
+		if plot != None and len(plot) > 0:
+			plotDatas.append(plot)
 
-	formatIntegrate(return_json, integrate)
+	return_json = plotDatas
+
+	# formatToMoney(return_json, unit, start, end, mult)
+
+	for plotIndex in range(len(return_json)):
+		formatIntegrate(return_json[plotIndex], integrate)
 
 	return return_json
 
-def getGoalData(equipmentId, consumptionData, dateFormat):
-	goalList = []
+def getGoalData(equipmentId, consumptionData, dateFormat, start, end):
+	goalLists= []
+
 	qs = Goal.objects
 	if equipmentId:
-		qs.filter(equipment=Equipment.objects.filter(pk=equipmenId))
+		qs.filter(equipment=Equipment.objects.filter(pk__in = equipmentId))
 
 	goals = qs.filter(yearmonth_start__gte = start, yearmonth_end__lte = end) | \
 					qs.filter(yearmonth_start__lte = start, yearmonth_start__gte = start) | \
 					qs.filter(yearmonth_start__lte = end, yearmonth_start__gte = end)
 
-	for point in consumptionData:
-		newPoint = [point[0], 0]
-		pointDate = datetime.strptime(point[0], dateFormat)
+	import pdb; pdb.set_trace()
 
-		for goal in goals:
-			if goal.yearmonth_start <= pointDate:
-				if goal.yearmonth_end <= pointDate:
-					newPoint[1] = goal.value_absolute
+	for plot in consumptionData:
+		goalList = []
+		for point in plot:
+			newPoint = [point[0], 0]
+			pointDate = datetime.strptime(point[0], dateFormat)
 
-		goalList.append(newPoint)
+			for goal in goals:
+				if goal.yearmonth_start <= pointDate:
+					if goal.yearmonth_end <= pointDate:
+						newPoint[1] = goal.value_absolute
+
+			goalList.append(newPoint)
+
+		if goalList != None and len(goalList) > 0:
+			goalLists.append(goalList)
+
+	return goalLists
 
 def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal, integrate):
 	aggregatedQuery= None
@@ -294,16 +317,15 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 	end = datetime.strptime(dateTimeEnd,timeFormat)
 	dateFormat = "%Y-%m-%d"
 
-	returnPlots = []
-
 	consumptionData = getConsumptionData(timeRange, dateFormat, equipmentId, unit, start, end, mult, integrate)
 
-	returnPlots.append(consumptionData)
+	# import pdb; pdb.set_trace()
 
 	if goal ==  "true":
-		goalData = getGoalData(equipmentId, consumptionData, dateFormat)
-		returnPlots.append(goalData)
+		goalData = getGoalData(equipmentId, consumptionData, dateFormat, start, end)
+		if goalData != None and len(goalData) > 0:
+			consumptionData += goalData
 
+	import pdb; pdb.set_trace()
 
-
-	return returnPlots
+	return consumptionData
