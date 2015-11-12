@@ -36,6 +36,8 @@
 {% static "javascript/date_range_picker_past_only.js" as date_range_picker_js %}
 {% static "javascript/time_picker_time_only.js" as time_picker_js %}
 {% static "javascript/data_plotter.js" as data_plotter %}
+{% static "javascript/ux_plot_inputs.js" as ux_plot %}
+
 
 <script type="text/javascript" src="{{moment_js}}"></script>
 <script type="text/javascript" src="{{daterangepicker_js}}"></script>
@@ -52,6 +54,8 @@
 <script type="text/javascript" src="{{date_range_picker_js}}"></script>
 <script type="text/javascript" src="{{time_picker_js}}"></script>
 <script type="text/javascript" src="{{data_plotter}}"></script>
+<script type="text/javascript" src="{{ux_plot}}"></script>
+
 {% endblock %}
 
 {% block content %}
@@ -135,7 +139,7 @@
 
 								<div class="checkbox">
 									<label>
-										<input id="boolean-goal" type="checkbox"> Incluir meta
+										<input disabled="true" id="boolean-goal" type="checkbox"> Incluir meta
 									</label>
 								</div>
 							</div>
