@@ -400,6 +400,16 @@ $(function(){
 			xFormat = "%M/%y";
 		};
 
+		console.log(xFormat);
+
+		var data = [];
+		var legends = [];
+
+		for(var key in plots){
+			legends.push(key);
+			data.push(plots[key]);
+		}
+
 		var newOptions = 
 			{
 				title: plotTitle,
@@ -420,7 +430,7 @@ $(function(){
 					}
 				}
 			};
-		plot = $.jqplot(chartId, plots, $.extend(defaultPlotOptions, newOptions));
+		plot = $.jqplot(chartId, data, $.extend(defaultPlotOptions, newOptions));
 	}
 
 	$(buttonSelector).click(function(){
@@ -434,6 +444,10 @@ $(function(){
 		var equipmentId = $(equipmentSelector).val();
 		var noDataMessage = "<p class='chart-error'>Não há dados de consumo para o equipamento ou período selecionado.</p>"
 
+		var equipmentId = [];
+		$(equipmentSelector + ":checked").each(function() {
+			equipmentId.push($(this).val());
+		});
 		data = {
 			"xStart": xStart,
 			"xEnd": xEnd,

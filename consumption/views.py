@@ -27,7 +27,9 @@ import calendar
 from django.db import transaction
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import ValidationError
+from pytz import NonExistentTimeError
 from exceptions import ValueError
+from collections import defaultdict
 
 class GraphicView(TemplateView):
 	# form_class = UploadFileForm
@@ -118,6 +120,12 @@ def importCSV(request):
 			messages.error(request, "Linha "  + str(lineNumber) + ": " + str(e3))
 			return HttpResponseRedirect(url)
 
+		except NonExistentTimeError as e4:
+			url = reverse('consumption:graphic')
+			
+			messages.error(request, "Horário inexistente na linha "  + str(lineNumber) + ": " + line['moment'])
+			return HttpResponseRedirect(url)
+
 def exportCSV(request):
 	if request.method == 'GET':
 		response = HttpResponse(content_type='text/csv')
@@ -155,16 +163,52 @@ def ajaxPlot(request):
 			unit = request.GET.get("measurement", "kw")
 			dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
 			dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
-			equipmentId = request.GET.get("equipmentId", None)
+			# dateTimeStart = "01-09-2014"
+			# dateTimeEnd = "01-10-2014"
+			equipmentId = request.GET.getlist("equipmentId[]", None)
+			income_type = request.user.profile.income_type
 			integrate = request.GET.get("integrate", False)
 
-			income_type = request.user.profile.income_type
+			# import pdb; pdb.set_trace()
+
 			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal, integrate)
 
 			return HttpResponse(json.dumps({'plots': return_json}), content_type="application/json")
 		except Exception as e:
 			print unicode(e.message)
 			return HttpResponse(json.dumps({'plots': [[[]]]}), content_type="application/json")
+
+# Parâmetros usados:
+	# code: código do sensor
+	# voltage: medida de voltagem
+	# current: corrente medida
+def create(request):
+	try:
+		if request.method == 'POST':
+			code = request.POST.get("code", "").encode("utf-8")
+			print(code)
+			current = request.POST.get("current", -1.0);
+			voltage = request.POST.get("voltage", -1.0);
+
+			sensor = None
+
+			try:
+				sensor = Sensor.objects.get(code=code)
+			except Sensor.DoesNotExist:
+				sensor = Sensor.objects.create(code=code, name="template" + unicode(datetime.now()))
+				sensor.save()
+
+			if current > 0:
+				if voltage > 0:
+					Consumption.new(datetime.now(), current, voltage, sensor.equipment.id).save()
+
+			return HttpResponse(status=201)
+		else	:
+			return HttpResponse(status=404)
+	except Exception as e:
+		print(error)
+		return HttpResponse(status=500)
+
 
 def formatToMoney(plotData, unit, start, end, mult, income_type):
 	if unit == "money":
@@ -204,6 +248,40 @@ def formatToMoney(plotData, unit, start, end, mult, income_type):
 		for index, item in enumerate(plotData):
 			plotData[index][1] = plotData[index][1] * mult
 
+# def formatToMoney(plotData, unit, start, end, mult):
+# 	for plot in plotData:
+# 		if unit == "money":
+# 			date1 = AESRate.objects.filter(valid_date__lte=start, name=income_type).order_by("-valid_date").first().valid_date
+# 			date2 = end
+# 			rates = AESRate.objects.filter(valid_date__gte=date1, valid_date__lt=date2, name=income_type).order_by("-valid_date").values("range_start", "range_end", "te", "tusd", "valid_date")
+
+# 			for index, item in enumerate(plot):
+# 				date_found = False
+
+# 				for rate in rates:
+
+# 					if rate["valid_date"] <= datetime.strptime(plot[index][0], "%Y-%m-%d").date() and not date_found:
+# 						date_found = True
+
+# 						# comparando os valores -> passando para kw
+# 						if rate["range_start"]:
+# 							if plot[index][1]*0.001 < rate["range_start"]:
+# 								date_found = False
+								
+# 						if rate["range_end"]:
+# 							if plot[index][1]*0.001 > rate["range_end"]:
+# 								date_found = False
+
+# 						if date_found:
+# 							plot[index][1] = plot[index][1] * float(rate["tusd"] + rate["te"]) * mult
+
+# 		else:
+# 			plot = map(lambda set: 
+# 				[set[0], set[1] * mult], 
+# 					plot
+# 			)
+# >>>>>>> 785eca81780640ed87f7e42bdc6373e300034322
+
 def formatIntegrate(plotData, integrate):
 	plotData = sorted(plotData, key=lambda x: x[0])
 	if integrate:
@@ -221,25 +299,30 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 	qs = Consumption.objects
 
 	if equipmentId:
-		if equipmentId != "":
-			qs = qs.filter(equipment_id=equipmentId)
+		
+		if not ("" in equipmentId):
+			ids = list(equipmentId)
+			ids.remove("")
+			qs = qs.filter(equipment_id__in = ids)
+
 
 	if timeRange == "hourly":
-		qs = qs.values('moment', 'current', 'voltage').filter(moment__range=[start, end])
+		qs = qs.values('moment', 'current', 'voltage', 'equipment_id').filter(moment__range=[start, end])
 		dateFormat = "%Y-%m-%d %H:%M"
 
+
 		return_json = map(lambda set: 
-			[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
+			[set['moment'].strftime(dateFormat), set['voltage'] * set['current'], set['equipment_id']], 
 				qs
 		)
 
 	elif timeRange == "daily":
 		end = end + timedelta(days=1)
-		qs = qs.filter(moment__gte=start, moment__lt=end).extra({'moment': "date(moment)"}).values('moment').annotate(current=Avg('current'), voltage=Avg('voltage'))
 		dateFormat = "%Y-%m-%d"
+		qs = qs.filter(moment__gte=start, moment__lt=end).extra({'moment': "date(moment)"}).values('moment', 'equipment_id').annotate(current=Avg('current'), voltage=Avg('voltage'))
 
 		return_json = map(lambda set: 
-			[set['moment'].strftime(dateFormat), set['voltage'] * set['current']], 
+			[set['moment'].strftime(dateFormat), set['voltage'] * set['current'], set['equipment_id']], 
 				qs
 		)
 
@@ -247,40 +330,89 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 		end = get_last_day_of_month(end)
 		qs = qs.filter(moment__gte=start, moment__lte=end)
 		qs = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month')
-		qs = qs.annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('month', 'year', 'current_avg', 'voltage_avg')
-		dateFormat = "%Y-%m-%d"
+		qs = qs.annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('equipment_id', 'month', 'year', 'current_avg', 'voltage_avg')
+		dateFormat = "%Y-%m"
 
 		return_json = map(lambda set: 
-			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), set['voltage_avg'] * set['current_avg']], 
+			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), set['voltage_avg'] * set['current_avg'], set['equipment_id']], 
 				qs
 		)
 
+
 	formatToMoney(return_json, unit, start, end, mult, income_type)
 
-	formatIntegrate(return_json, integrate)
+	momentIndex = 0
+	powerIndex = 1
+	equipmentIdIndex = 2
+
+	plotDatas = []
+
+	# Foi pedido o grafico do somatorio
+	plot = []
+	if '' in equipmentId:
+		groups = {}
+		for obj in return_json:
+			if not (obj[momentIndex] in groups):
+				groups[obj[momentIndex]] = []
+
+			groups[obj[momentIndex]].append( obj[powerIndex] )
+
+		for moment in groups:
+			sum = 0
+			for value in groups[moment]:
+				sum += value
+			plot.append([moment, sum])
+
+
+		plotDatas.append(plot)
+
+	# Separando por id 
+	for id in equipmentId:
+		if id != "":
+			plot = filter(lambda x: x[equipmentIdIndex] == int(id), return_json)
+			if plot != None and len(plot) > 0:
+				plotDatas.append(plot)
+
+	return_json = plotDatas
+
+	# formatToMoney(return_json, unit, start, end, mult, incomeType)
+
+	for plotIndex in range(len(return_json)):
+		formatIntegrate(return_json[plotIndex], integrate)
 
 	return return_json
 
 def getGoalData(equipmentId, consumptionData, dateFormat, start, end):
-	goalList = []
+
+	goalLists= []
+
 	qs = Goal.objects
-	if equipmentId:
-		qs.filter(equipment=Equipment.objects.filter(pk=equipmentId))
+	ids = list(equipmentId)
+	ids.remove("")
+	if ids and len(ids) > 0:
+		qs.filter(equipment=Equipment.objects.filter(pk__in = ids))
 
 	goals = qs.filter(yearmonth_start__gte = start, yearmonth_end__lte = end) | \
 					qs.filter(yearmonth_start__lte = start, yearmonth_start__gte = start) | \
 					qs.filter(yearmonth_start__lte = end, yearmonth_start__gte = end)
 
-	for point in consumptionData:
-		newPoint = [point[0], 0]
-		pointDate = datetime.strptime(point[0], dateFormat)
+	for plot in consumptionData:
+		goalList = []
+		for point in plot:
+			newPoint = [point[0], 0]
+			pointDate = datetime.strptime(point[0], dateFormat)
 
-		for goal in goals:
-			if goal.yearmonth_start <= pointDate:
-				if goal.yearmonth_end <= pointDate:
-					newPoint[1] = goal.value_absolute
+			for goal in goals:
+				if goal.yearmonth_start <= pointDate.date():
+					if goal.yearmonth_end <= pointDate.date():
+						newPoint[1] = goal.value_absolute
 
-		goalList.append(newPoint)
+			goalList.append(newPoint)
+
+		if goalList != None and len(goalList) > 0:
+			goalLists.append(goalList)
+
+	return goalLists
 
 	return goalList
 
@@ -297,11 +429,25 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 
 	consumptionData = getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate, income_type)
 
-	returnPlots.append(consumptionData)
-
 	if goal ==  "true":
-		# ver direito o dateFormat...
 		goalData = getGoalData(equipmentId, consumptionData, dateFormat, start, end)
-		returnPlots.append(goalData)
+		if goalData != None and len(goalData) > 0:
+			consumptionData += goalData
 
-	return returnPlots
+	# Retornando os dados indexados para fazer a legenda
+	indexedData = {}
+	
+
+	if goal in ["true", "True", True]:
+		for i in range(len(equipmentId)):
+			if equipmentId[i] == "":
+				indexedData["all"] = consumptionData[i]
+			else:
+				indexedData[Equipment.objects.filter(pk = equipmentId[i])[0].name] = consumptionData[i]
+		indexedData["goal"] = consumptionData[len(consumptionData) - 1]
+
+	else:
+		for i in range(len(equipmentId)):
+			indexedData[Equipment.objects.filter(pk = equipmentId[i])[0].name] = consumptionData[i]
+
+	return indexedData
