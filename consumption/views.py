@@ -210,6 +210,14 @@ def create(request):
 		return HttpResponse(status=500)
 
 
+def dateFormat(timeRange):
+	if timeRange == "hourly":
+		return "%Y-%m-%d %H:%M"
+	elif timeRange == "daily":
+		return "%Y-%m-%d"
+	elif timeRange == "monthly":
+		return "%Y-%m"
+
 def formatToMoney(plotData, unit, start, end, mult, income_type):
 	if unit == "money":
 		# último aes antes da primeira data escolhida
@@ -302,7 +310,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 		
 		if not ("" in equipmentId):
 			ids = list(equipmentId)
-			ids.remove("")
+			if "" in ids: ids.remove("")
 			qs = qs.filter(equipment_id__in = ids)
 
 
@@ -339,7 +347,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 		)
 
 
-	formatToMoney(return_json, unit, start, end, mult, income_type)
+	# formatToMoney(return_json, unit, start, end, mult, income_type)
 
 	momentIndex = 0
 	powerIndex = 1
@@ -388,7 +396,7 @@ def getGoalData(equipmentId, consumptionData, dateFormat, start, end):
 
 	qs = Goal.objects
 	ids = list(equipmentId)
-	ids.remove("")
+	if "" in ids: ids.remove("")
 	if ids and len(ids) > 0:
 		qs.filter(equipment=Equipment.objects.filter(pk__in = ids))
 
@@ -414,7 +422,6 @@ def getGoalData(equipmentId, consumptionData, dateFormat, start, end):
 
 	return goalLists
 
-	return goalList
 
 def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal, integrate):
 	aggregatedQuery= None
@@ -423,31 +430,26 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 	timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
 	start = datetime.strptime(dateTimeStart,timeFormat)
 	end = datetime.strptime(dateTimeEnd,timeFormat)
-	dateFormat = "%Y-%m-%d"
 
 	returnPlots = []
 
 	consumptionData = getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate, income_type)
 
 	if goal ==  "true":
-		goalData = getGoalData(equipmentId, consumptionData, dateFormat, start, end)
+		goalData = getGoalData(equipmentId, consumptionData, dateFormat(timeRange), start, end)
 		if goalData != None and len(goalData) > 0:
 			consumptionData += goalData
 
 	# Retornando os dados indexados para fazer a legenda
 	indexedData = {}
 	
+	for i in range(len(equipmentId)):
+		if equipmentId[i] == "":
+			indexedData["all"] = consumptionData[i]
+		else:
+			indexedData[Equipment.objects.filter(pk = equipmentId[i])[0].name] = consumptionData[i]
 
 	if goal in ["true", "True", True]:
-		for i in range(len(equipmentId)):
-			if equipmentId[i] == "":
-				indexedData["all"] = consumptionData[i]
-			else:
-				indexedData[Equipment.objects.filter(pk = equipmentId[i])[0].name] = consumptionData[i]
 		indexedData["goal"] = consumptionData[len(consumptionData) - 1]
-
-	else:
-		for i in range(len(equipmentId)):
-			indexedData[Equipment.objects.filter(pk = equipmentId[i])[0].name] = consumptionData[i]
 
 	return indexedData

@@ -402,6 +402,7 @@ $(function(){
 
 		console.log(xFormat);
 
+		// desempacotar os dados...
 		var data = [];
 		var legends = [];
 
@@ -433,6 +434,10 @@ $(function(){
 		plot = $.jqplot(chartId, data, $.extend(defaultPlotOptions, newOptions));
 	}
 
+	var hasData = function(responseData){
+		return Object.keys(responseData).length > 0;
+	}
+
 	$(buttonSelector).click(function(){
 		var dateRangeInput = $(dateInputSelector).val();
 		var measurement = $(measurementInputSelector).val();
@@ -459,7 +464,7 @@ $(function(){
 		}
 		callApi(data);
 		callApiRequest.success(function(response){
-			if (response.plots[0].length == 0){
+			if (!hasData(response.plots)){
 				$("#"+chartId).html(noDataMessage);
 			} else {
 				replotPlot(response.plots, timeRange);
@@ -475,3 +480,4 @@ $(function(){
 	validateConfig();
 	$(buttonSelector).click();
 })
+
