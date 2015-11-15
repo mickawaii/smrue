@@ -393,6 +393,14 @@ $(function(){
 
 		console.log(xFormat);
 
+		var data = [];
+		var legends = [];
+
+		for(var key in plots){
+			legends.push(key);
+			data.push(plots[key]);
+		}
+
 		var newOptions = 
 			{
 				title: plotTitle,
@@ -412,7 +420,7 @@ $(function(){
 					}
 				}
 			};
-		plot = $.jqplot(chartId, plots, $.extend(defaultPlotOptions, newOptions));
+		plot = $.jqplot(chartId, data, $.extend(defaultPlotOptions, newOptions));
 	}
 
 	$(buttonSelector).click(function(){

@@ -27,7 +27,9 @@ import calendar
 from django.db import transaction
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import ValidationError
+from pytz import NonExistentTimeError
 from exceptions import ValueError
+from collections import defaultdict
 
 class GraphicView(TemplateView):
 	# form_class = UploadFileForm
@@ -85,6 +87,12 @@ def importCSV(request):
 			url = reverse('consumption:graphic')
 			
 			messages.error(request, "Linha "  + str(lineNumber) + ": " + str(e3))
+			return HttpResponseRedirect(url)
+
+		except NonExistentTimeError as e4:
+			url = reverse('consumption:graphic')
+			
+			messages.error(request, "Horário inexistente na linha "  + str(lineNumber) + ": " + line['moment'])
 			return HttpResponseRedirect(url)
 
 def exportCSV(request):
@@ -179,36 +187,37 @@ def create(request):
 
 
 def formatToMoney(plotData, unit, start, end, mult):
-	if unit == "money":
-		date1 = AESRate.objects.filter(valid_date__lte=start, name=income_type).order_by("-valid_date").first().valid_date
-		date2 = end
-		rates = AESRate.objects.filter(valid_date__gte=date1, valid_date__lt=date2, name=income_type).order_by("-valid_date").values("range_start", "range_end", "te", "tusd", "valid_date")
+	for plot in plotData:
+		if unit == "money":
+			date1 = AESRate.objects.filter(valid_date__lte=start, name=income_type).order_by("-valid_date").first().valid_date
+			date2 = end
+			rates = AESRate.objects.filter(valid_date__gte=date1, valid_date__lt=date2, name=income_type).order_by("-valid_date").values("range_start", "range_end", "te", "tusd", "valid_date")
 
-		for index, item in enumerate(plotData):
-			date_found = False
+			for index, item in enumerate(plot):
+				date_found = False
 
-			for rate in rates:
+				for rate in rates:
 
-				if rate["valid_date"] <= datetime.strptime(plotData[index][0], "%Y-%m-%d").date() and not date_found:
-					date_found = True
+					if rate["valid_date"] <= datetime.strptime(plot[index][0], "%Y-%m-%d").date() and not date_found:
+						date_found = True
 
-					# comparando os valores -> passando para kw
-					if rate["range_start"]:
-						if plotData[index][1]*0.001 < rate["range_start"]:
-							date_found = False
-							
-					if rate["range_end"]:
-						if plotData[index][1]*0.001 > rate["range_end"]:
-							date_found = False
+						# comparando os valores -> passando para kw
+						if rate["range_start"]:
+							if plot[index][1]*0.001 < rate["range_start"]:
+								date_found = False
+								
+						if rate["range_end"]:
+							if plot[index][1]*0.001 > rate["range_end"]:
+								date_found = False
 
-					if date_found:
-						plotData[index][1] = plotData[index][1] * float(rate["tusd"] + rate["te"]) * mult
+						if date_found:
+							plot[index][1] = plot[index][1] * float(rate["tusd"] + rate["te"]) * mult
 
-	else:
-		plotData = map(lambda set: 
-			[set[0], set[1] * mult], 
-				plotData
-		)
+		else:
+			plot = map(lambda set: 
+				[set[0], set[1] * mult], 
+					plot
+			)
 
 def formatIntegrate(plotData, integrate):
 	plotData = sorted(plotData, key=lambda x: x[0])
@@ -227,8 +236,12 @@ def getConsumptionData(timeRange, dateFormat, equipmentId, unit, start, end, mul
 	qs = Consumption.objects
 
 	if equipmentId:
-		if equipmentId != "":
-			qs = qs.filter(equipment_id__in = equipmentId)
+		
+		if not ("" in equipmentId):
+			ids = list(equipmentId)
+			ids.remove("")
+			qs = qs.filter(equipment_id__in = ids)
+
 
 	if timeRange == "hourly":
 		qs = qs.values('moment', 'current', 'voltage', 'equipment_id').filter(moment__range=[start, end])
@@ -261,16 +274,42 @@ def getConsumptionData(timeRange, dateFormat, equipmentId, unit, start, end, mul
 				qs
 		)
 
-	# Separando por id 
+	momentIndex = 0
+	powerIndex = 1
+	equipmentIdIndex = 2
+
 	plotDatas = []
+
+
+	# Foi pedido o grafico do somatorio
+	plot = []
+	if '' in equipmentId:
+		groups = {}
+		for obj in return_json:
+			if not (obj[momentIndex] in groups):
+				groups[obj[momentIndex]] = []
+
+			groups[obj[momentIndex]].append( obj[powerIndex] )
+
+		for moment in groups:
+			sum = 0
+			for value in groups[moment]:
+				sum += value
+			plot.append([moment, sum])
+
+
+		plotDatas.append(plot)
+
+	# Separando por id 
 	for id in equipmentId:
-		plot = filter(lambda x: x[2] == int(id), return_json)
-		if plot != None and len(plot) > 0:
-			plotDatas.append(plot)
+		if id != "":
+			plot = filter(lambda x: x[equipmentIdIndex] == int(id), return_json)
+			if plot != None and len(plot) > 0:
+				plotDatas.append(plot)
 
 	return_json = plotDatas
 
-	# formatToMoney(return_json, unit, start, end, mult)
+	# formatToMoney(return_json, unit, start, end, mult, incomeType)
 
 	for plotIndex in range(len(return_json)):
 		formatIntegrate(return_json[plotIndex], integrate)
@@ -281,14 +320,14 @@ def getGoalData(equipmentId, consumptionData, dateFormat, start, end):
 	goalLists= []
 
 	qs = Goal.objects
-	if equipmentId:
-		qs.filter(equipment=Equipment.objects.filter(pk__in = equipmentId))
+	ids = list(equipmentId)
+	ids.remove("")
+	if ids and len(ids) > 0:
+		qs.filter(equipment=Equipment.objects.filter(pk__in = ids))
 
 	goals = qs.filter(yearmonth_start__gte = start, yearmonth_end__lte = end) | \
 					qs.filter(yearmonth_start__lte = start, yearmonth_start__gte = start) | \
 					qs.filter(yearmonth_start__lte = end, yearmonth_start__gte = end)
-
-	import pdb; pdb.set_trace()
 
 	for plot in consumptionData:
 		goalList = []
@@ -297,8 +336,8 @@ def getGoalData(equipmentId, consumptionData, dateFormat, start, end):
 			pointDate = datetime.strptime(point[0], dateFormat)
 
 			for goal in goals:
-				if goal.yearmonth_start <= pointDate:
-					if goal.yearmonth_end <= pointDate:
+				if goal.yearmonth_start <= pointDate.date():
+					if goal.yearmonth_end <= pointDate.date():
 						newPoint[1] = goal.value_absolute
 
 			goalList.append(newPoint)
@@ -319,13 +358,25 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 
 	consumptionData = getConsumptionData(timeRange, dateFormat, equipmentId, unit, start, end, mult, integrate)
 
-	# import pdb; pdb.set_trace()
-
 	if goal ==  "true":
 		goalData = getGoalData(equipmentId, consumptionData, dateFormat, start, end)
 		if goalData != None and len(goalData) > 0:
 			consumptionData += goalData
 
-	import pdb; pdb.set_trace()
+	# Retornando os dados indexados para fazer a legenda
+	indexedData = {}
+	
 
-	return consumptionData
+	if goal in ["true", "True", True]:
+		for i in range(len(equipmentId)):
+			if equipmentId[i] == "":
+				indexedData["all"] = consumptionData[i]
+			else:
+				indexedData[Equipment.objects.filter(pk = equipmentId[i])[0].name] = consumptionData[i]
+		indexedData["goal"] = consumptionData[len(consumptionData) - 1]
+
+	else:
+		for i in range(len(equipmentId)):
+			indexedData[Equipment.objects.filter(pk = equipmentId[i])[0].name] = consumptionData[i]
+
+	return indexedData
