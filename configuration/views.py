@@ -54,8 +54,8 @@ class ConfigView(TemplateView):
 		return context
 
 	def post(self, request):
-		equipments = json.loads(request.POST["equipments"])
-		income_type = request.POST["income_type"]
+		equipments = json.loads(request.POST.get("equipments"))
+		income_type = request.POST.get("income_type", None)
 
 		if income_type:
 			Profile.objects.update_or_create(user=request.user,defaults={"income_type":income_type})
@@ -63,16 +63,28 @@ class ConfigView(TemplateView):
 		with transaction.atomic():
 			for obj in equipments:
 				equipment = get_object_or_404(Equipment, pk=obj["equipment"])
-				already_has_sensor = Sensor.objects.filter(equipment_id=obj["equipment"]).count()
+				old_sensor = Sensor.objects.filter(equipment_id=obj["equipment"])
+				new_sensor = obj["sensor"]
 
-				if obj["sensor"]:
-					sensor = get_object_or_404(Sensor, pk=obj["sensor"])
-					sensor.equipment = equipment
-					sensor.save()
-				elif already_has_sensor:
-					sensor = equipment.sensor
-					sensor.equipment_id = None
-					sensor.save()
+				if old_sensor.count() > 0:
+					old_sensor = old_sensor.first()
+
+					if not new_sensor:
+						old_sensor.equipment = None
+						old_sensor.save()
+					elif new_sensor:
+						new_sensor = Sensor.objects.filter(pk=obj["sensor"]).first()
+
+						if new_sensor.id != old_sensor.id:
+							old_sensor.equipment_id = None
+							old_sensor.save()
+							new_sensor.equipment = equipment
+							new_sensor.save()
+							
+				elif new_sensor:
+					new_sensor = Sensor.objects.filter(pk=obj["sensor"]).first()
+					new_sensor.equipment = equipment
+					new_sensor.save()
 
 		return HttpResponseRedirect(reverse_lazy("configuration:config"))
 
