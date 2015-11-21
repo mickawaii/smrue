@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% load static from staticfiles %}
+
+{% block js %}
+{% static "jquery-ui/jquery-ui.min.js" as jquery_ui %}
+{% static "jquery-jqplot/jquery.jqplot.min.js" as jqplot_js %}
+<script src="{{jquery_ui}}"></script>
+<script src="{{jqplot_js}}" type="text/javascript"></script>
+{% endblock %}
+
+{% block css %}
+	{% static "jquery-jqplot/jquery.jqplot.min.css" as jqplot_css %}
+	<link rel="stylesheet" type="text/css" href="{{jqplot_css}}">
+	<style type="text/css">
+		.intro h1 {
+			color: #04ACCB;
+		    font-size: 55px;
+		    padding-top: 50px;
+		}
+
+		.intro p {
+			color: #B5B5B5;
+			border-top: 2px solid #FF9E41;
+		    font-size: 20px;
+		}
+
+		.objective {
+			background-color: #04ACCB;
+		}
+
+		.objective h1 {
+			color: white;
+			padding-top: 50px
+		}
+
+		.objective p {
+			color: white;
+			padding-bottom: 50px;
+			font-size: 20px;
+		}
+
+		.question {
+			background-color: #04ACCB;
+		}
+
+		.question h1 {
+			color: white;
+			padding-top: 50px
+		}
+
+		.question p {
+			color: white;
+			padding-bottom: 50px;
+			font-size: 30px;
+		}
+
+		.question img {
+			margin-top: 50px;
+			margin-bottom: 50px;
+		}
+
+		.motivation h1 {
+			color: #026F83;
+			padding-top: 50px
+		}
+
+		.motivation p {
+			color: #026F83;
+			padding-bottom: 50px;
+			font-size: 20px;
+		}
+
+		.description {
+		    background: rgb(245, 245, 245);
+		}
+
+		.description h1 {
+			color: #026F83;
+		}
+
+		.description p {
+			color: #026F83;
+			padding-bottom: 50px;
+			font-size: 20px;
+		}
+
+		.esquema {
+			padding: 50px 0px;
+		}
+
+		.esquema img {
+			width: 100%;
+		}
+
+	</style>
+{% endblock %}
+
+{% block home_content %}
+	{% static "home-images/esquema.png" as esquema %}
+	{% static "home-images/gasto_energia.png" as gasto_energia %}
+	{% static "home-images/conta.png" as conta %}
+	{% static "home-images/porco.png" as porco %}
+
+	<div class="container-fluid question">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-7">
+					<h1>Como?</h1>
+					<p>
+						Saiba como controlar seus gastos de energia. 
+					</p>
+				</div>
+				    <img src="{{conta}}"/>
+
+				<div class="col-lg-5">
+				</div>
+			</div>
+		</div>
+    </div>
+
+	<div class="container-fluid">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-6 intro">
+					<h1> SiME </h1>
+					<p> Sistema de Monitoramento de Energia </p>
+				</div>
+
+				<div class="col-lg-6 motivation">
+					<h1>Conheça</h1>
+					<p>
+						O sistema proposto permite medir o consumo de energia por cada aparelho doméstico, detectando possíveis aparelhos “vilões”, auxiliando o consumidor final a reduzir o consumo de energia elétrica nas suas residências. 
+					</p>
+				</div>
+			</div>
+		</div>
+    </div>
+
+	<div class="container-fluid description">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-6">
+					<h1>Componentes do Sistema</h1>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-sm-6 col-md-4">
+				    <div class="thumbnail">
+						<div class="caption">
+							<h3>Aparelho eletrodoméstico</h3>
+							<p>o eletrodoméstico cujo consumo será medido.</p>
+					    </div>
+				    </div>
+				</div>
+
+				<div class="col-sm-6 col-md-4">
+				    <div class="thumbnail">
+						<div class="caption">
+							<h3>Dispositivos móveis</h3>
+							<p>celulares, tablets, notebooks, desktops com acesso à internet, localizados dentro ou fora da residência</p>
+					    </div>
+				    </div>
+				</div>
+
+				<div class="col-sm-6 col-md-4">
+				    <div class="thumbnail">
+						<div class="caption">
+							<h3>Aplicação em nuvem</h3>
+							<p>um site disponibilizado na nuvem, permitindo ao usuário visualizar o seu consumo de energia em qualquer lugar com acesso à internet</p>
+					    </div>
+				    </div>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-sm-6 col-md-4">
+				    <div class="thumbnail">
+						<div class="caption">
+							<h3>Módulo Sensor</h3>
+							<p>dispositivo que medirá o consumo de energia, um para cada equipamento</p>
+					    </div>
+				    </div>
+				</div>
+
+				<div class="col-sm-6 col-md-4">
+				    <div class="thumbnail">
+						<div class="caption">
+							<h3>Módulo coordenador</h3>
+							<p>dispositivo responsável por enviar informações coletadas dos sensores e enviá-las através de requisições web para a aplicação em nuvem</p>
+					    </div>
+				    </div>
+				</div>
+
+			</div>
+		</div>
+    </div>
+
+    <div class="container-fluid esquema">
+    	<div class="container">
+    		<div class="row">
+    			<div class="col-lg-12">
+				    <img src="{{esquema}}"/>
+    			</div>
+    		</div>
+    	</div>
+    </div>
+{% endblock %}

@@ -14,13 +14,25 @@ from django.contrib import messages
 import json
 from collections import OrderedDict
 
+class IndexView(TemplateView):
+	template_name = 'index.html'
+
+	def get_context_data(self, **kwargs):
+		context = super(IndexView, self).get_context_data(**kwargs)
+
+		context['page_title'] = 'SiME'
+
+		context['current_user'] = self.request.user.username
+
+		return context
+
 class HomeView(TemplateView):
 	template_name = 'home.html'
 
 	def get_context_data(self, **kwargs):
 		context = super(HomeView, self).get_context_data(**kwargs)
 
-		context['page_title'] = 'SMRUE'
+		context['page_title'] = 'SiME'
 
 		context['no_users'] = User.objects.filter(is_superuser=False).count() == 0
 

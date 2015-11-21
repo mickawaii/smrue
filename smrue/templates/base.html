@@ -52,51 +52,64 @@
   </head>
 
   <body>
-    <!-- Fixed navbar -->
-    <div class="navbar navbar-default navbar-static-top" role="navigation">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <a class="navbar-brand" href="{% url 'home' %}">SMRUE</a>
+    <div class="wrapper">
+      <!-- Fixed navbar -->
+      <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="{% url 'index' %}">SiME</a>
+          </div>
+
+          <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-left">
+              {% if user.is_authenticated %}
+                <li><a href="{% url 'admin:index' %}">Admin</a></li>
+                <li><a href="{% url 'consumption:graphic' %}">Consumo</a></li>
+                <li><a href="{% url 'equipment:list' %}">Equipamentos</a></li>
+                <li><a href="{% url 'sensor:list' %}">Sensores</a></li>
+                <li><a href="{% url 'configuration:config' %}">Configurações</a></li>
+                <li><a href="{% url 'aes_rate:table' %}">AES</a></li>
+                <li><a href="{% url 'goal:list' %}">Metas</a></li>
+              {% endif %}
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+              {% if user.is_authenticated %}
+                <p class="navbar-text">Olá, <a href="{% url 'configuration:edit_user' %}">{{user.username}}</a></p>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+              {% else %}
+                <li><a href="{% url 'login' %}">Login</a></li>
+              {% endif %}
+            </ul>
+          </div><!--/.nav-collapse -->
         </div>
-
-        <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav navbar-left">
-            <li><a href="{% url 'admin:index' %}">Admin</a></li>
-            <li><a href="{% url 'consumption:graphic' %}">Consumo</a></li>
-            <li><a href="{% url 'equipment:list' %}">Equipamentos</a></li>
-            <li><a href="{% url 'sensor:list' %}">Sensores</a></li>
-            <li><a href="{% url 'configuration:config' %}">Configurações</a></li>
-            <li><a href="{% url 'aes_rate:table' %}">AES</a></li>
-            <li><a href="{% url 'goal:list' %}">Metas</a></li>
-          </ul>
-
-          <ul class="nav navbar-nav navbar-right">
-            {% if user.is_authenticated %}
-              <p class="navbar-text">Olá, <a href="{% url 'configuration:edit_user' %}">{{user.username}}</a></p>
-              <li><a href="{% url 'logout' %}">Logout</a></li>
-            {% else %}
-              <li><a href="{% url 'login' %}">Login</a></li>
-            {% endif %}
-          </ul>
-        </div><!--/.nav-collapse -->
       </div>
+
+      {% block home_content %}
+
+        <div class="container">
+          {% block content %}
+
+          {% endblock %}
+
+          {% block js_bottom %}
+          {% endblock %}
+        </div> <!-- /container -->
+
+      {% endblock %}
+
     </div>
 
-    <div class="container">
-      {% block content %}
-
-      {% endblock %}
-
-      <hr>
-
+    <div class="container-fluid footer">
       <footer>
         <div class="container">
-          <p>&copy; Sistema de Monitoramento Residencial de Uso de Energia 2015</p>
+          <div class="row">
+            <div class="col-lg-12">
+              <p>&copy; Sistema de Monitoramento Residencial de Uso de Energia 2015</p>
+            </div>
+          </div>
         </div>
       </footer>
-
-      {% block js_bottom %}
-      {% endblock %}
-    </div> <!-- /container -->
+    </div>
   </body>
 </html>
