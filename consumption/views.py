@@ -74,15 +74,19 @@ def create(request):
 
 			sensor = None
 
-			try:
-				sensor = Sensor.objects.get(code=code)
-			except Sensor.DoesNotExist:
+			existing_sensor = Sensor.objects.filter(code=code)
+
+			if existing_sensor.count() > 0:
+				sensor = Sensor.objects.filter(code=code).first()
+			else:
 				sensor = Sensor.objects.create(code=code, name="sensor_" + code)
 				sensor.save()
 
+			equipment = sensor.equipment
+
 			if current > 0:
 				if voltage > 0:
-					Consumption.new(datetime.now(), current, voltage, sensor.equipment.id).save()
+					Consumption.new(datetime.now(), current, voltage, equipment.id).save()
 
 			return HttpResponse(status=201)
 		else:
