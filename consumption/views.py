@@ -22,6 +22,7 @@ from datetime import datetime, timedelta
 import unicodecsv
 import csv
 import json
+import ast
 from django.db import connection
 import calendar
 from django.db import transaction
@@ -64,17 +65,19 @@ def get_last_day_of_month(dt):
 def create(request):
 	try:
 		if request.method == 'POST':
-			code = request.POST.get("code", "").encode("utf-8")
-			print(code)
-			current = request.POST.get("current", -1.0);
-			voltage = request.POST.get("voltage", -1.0);
+			# consumption = "{'voltage': 5.32, 'current': 1.23}"
+			consumption = request.POST.get('consumption')
+			consumption_params = ast.literal_eval(consumption)
+			code = request.POST.get("code").encode("utf-8")
+			current = consumption_params.get("i", -1.0)
+			voltage = consumption_params.get("v", -1.0)
 
 			sensor = None
 
 			try:
 				sensor = Sensor.objects.get(code=code)
 			except Sensor.DoesNotExist:
-				sensor = Sensor.objects.create(code=code, name="template" + unicode(datetime.now()))
+				sensor = Sensor.objects.create(code=code, name="sensor_" + code)
 				sensor.save()
 
 			if current > 0:
@@ -82,7 +85,7 @@ def create(request):
 					Consumption.new(datetime.now(), current, voltage, sensor.equipment.id).save()
 
 			return HttpResponse(status=201)
-		else	:
+		else:
 			return HttpResponse(status=404)
 	except Exception as e:
 		print(error)
