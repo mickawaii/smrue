@@ -218,7 +218,7 @@ def dateFormat(timeRange):
 	elif timeRange == "monthly":
 		return "%Y-%m"
 
-def formatToMoney(plotData, unit, start, end, mult, income_type):
+def formatToMoney(plotData, unit, start, end, mult, income_type, dateFormat):
 	if unit == "money":
 		# último aes antes da primeira data escolhida
 		first_aes = AESRate.objects.filter(valid_date__lte=start, name=income_type).order_by("-valid_date").first()
@@ -235,7 +235,7 @@ def formatToMoney(plotData, unit, start, end, mult, income_type):
 
 			for rate in rates:
 
-				if rate["valid_date"] <= datetime.strptime(plotData[index][0], "%Y-%m-%d").date() and not date_found:
+				if rate["valid_date"] <= datetime.strptime(plotData[index][0], dateFormat).date() and not date_found:
 					date_found = True
 
 					# comparando os valores -> passando para kw
@@ -316,38 +316,35 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 
 	if timeRange == "hourly":
 		qs = qs.values('moment', 'current', 'voltage', 'equipment_id').filter(moment__range=[start, end])
-		dateFormat = "%Y-%m-%d %H:%M"
-
 
 		return_json = map(lambda set: 
-			[set['moment'].strftime(dateFormat), set['voltage'] * set['current'], set['equipment_id']], 
+			[set['moment'].strftime(dateFormat(timeRange)), set['voltage'] * set['current'], set['equipment_id']], 
 				qs
 		)
 
 	elif timeRange == "daily":
 		end = end + timedelta(days=1)
-		dateFormat = "%Y-%m-%d"
 		qs = qs.filter(moment__gte=start, moment__lt=end).extra({'moment': "date(moment)"}).values('moment', 'equipment_id').annotate(current=Avg('current'), voltage=Avg('voltage'))
 
 		return_json = map(lambda set: 
-			[set['moment'].strftime(dateFormat), set['voltage'] * set['current'], set['equipment_id']], 
+			[set['moment'].strftime(dateFormat(timeRange)), set['voltage'] * set['current'], set['equipment_id']], 
 				qs
 		)
 
 	elif timeRange == "monthly":
+		import pdb; pdb.set_trace()
 		end = get_last_day_of_month(end)
 		qs = qs.filter(moment__gte=start, moment__lte=end)
 		qs = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month')
 		qs = qs.annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('equipment_id', 'month', 'year', 'current_avg', 'voltage_avg')
-		dateFormat = "%Y-%m"
 
 		return_json = map(lambda set: 
-			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat), set['voltage_avg'] * set['current_avg'], set['equipment_id']], 
+			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat(timeRange)), set['voltage_avg'] * set['current_avg'], set['equipment_id']], 
 				qs
 		)
 
 
-	# formatToMoney(return_json, unit, start, end, mult, income_type)
+	formatToMoney(return_json, unit, start, end, mult, income_type, dateFormat(timeRange))
 
 	momentIndex = 0
 	powerIndex = 1
