@@ -185,38 +185,6 @@ def ajaxPlot(request):
 			print unicode(e.message)
 			return HttpResponse(json.dumps({'plots': [[[]]]}), content_type="application/json")
 
-# Parâmetros usados:
-	# code: código do sensor
-	# voltage: medida de voltagem
-	# current: corrente medida
-def create(request):
-	try:
-		if request.method == 'POST':
-			code = request.POST.get("code", "").encode("utf-8")
-			print(code)
-			current = request.POST.get("current", -1.0);
-			voltage = request.POST.get("voltage", -1.0);
-
-			sensor = None
-
-			try:
-				sensor = Sensor.objects.get(code=code)
-			except Sensor.DoesNotExist:
-				sensor = Sensor.objects.create(code=code, name="template" + unicode(datetime.now()))
-				sensor.save()
-
-			if current > 0:
-				if voltage > 0:
-					Consumption.new(datetime.now(), current, voltage, sensor.equipment.id).save()
-
-			return HttpResponse(status=201)
-		else	:
-			return HttpResponse(status=404)
-	except Exception as e:
-		print(error)
-		return HttpResponse(status=500)
-
-
 def dateFormat(timeRange):
 	if timeRange == "hourly":
 		return "%Y-%m-%d %H:%M"
@@ -262,40 +230,6 @@ def formatToMoney(plotData, unit, start, end, mult, income_type, dateFormat):
 	else:
 		for index, item in enumerate(plotData):
 			plotData[index][1] = plotData[index][1] * mult
-
-# def formatToMoney(plotData, unit, start, end, mult):
-# 	for plot in plotData:
-# 		if unit == "money":
-# 			date1 = AESRate.objects.filter(valid_date__lte=start, name=income_type).order_by("-valid_date").first().valid_date
-# 			date2 = end
-# 			rates = AESRate.objects.filter(valid_date__gte=date1, valid_date__lt=date2, name=income_type).order_by("-valid_date").values("range_start", "range_end", "te", "tusd", "valid_date")
-
-# 			for index, item in enumerate(plot):
-# 				date_found = False
-
-# 				for rate in rates:
-
-# 					if rate["valid_date"] <= datetime.strptime(plot[index][0], "%Y-%m-%d").date() and not date_found:
-# 						date_found = True
-
-# 						# comparando os valores -> passando para kw
-# 						if rate["range_start"]:
-# 							if plot[index][1]*0.001 < rate["range_start"]:
-# 								date_found = False
-								
-# 						if rate["range_end"]:
-# 							if plot[index][1]*0.001 > rate["range_end"]:
-# 								date_found = False
-
-# 						if date_found:
-# 							plot[index][1] = plot[index][1] * float(rate["tusd"] + rate["te"]) * mult
-
-# 		else:
-# 			plot = map(lambda set: 
-# 				[set[0], set[1] * mult], 
-# 					plot
-# 			)
-# >>>>>>> 785eca81780640ed87f7e42bdc6373e300034322
 
 def formatIntegrate(plotData, integrate):
 	plotData = sorted(plotData, key=lambda x: x[0])
