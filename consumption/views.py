@@ -23,6 +23,7 @@ import unicodecsv
 import csv
 import json
 import ast
+import traceback
 from django.db import connection
 import calendar
 from django.db import transaction
@@ -92,7 +93,7 @@ def create(request):
 		else:
 			return HttpResponse(status=404)
 	except Exception as e:
-		print(error)
+		traceback.print_exc()
 		return HttpResponse(status=500)
 
 def importCSV(request):
