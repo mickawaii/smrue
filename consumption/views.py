@@ -169,8 +169,6 @@ def ajaxPlot(request):
 			income_type = request.user.profile.income_type
 			integrate = request.GET.get("integrate", False)
 
-			# import pdb; pdb.set_trace()
-
 			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal, integrate)
 
 			return HttpResponse(json.dumps({'plots': return_json}), content_type="application/json")
@@ -256,40 +254,6 @@ def formatToMoney(plotData, unit, start, end, mult, income_type, dateFormat):
 		for index, item in enumerate(plotData):
 			plotData[index][1] = plotData[index][1] * mult
 
-# def formatToMoney(plotData, unit, start, end, mult):
-# 	for plot in plotData:
-# 		if unit == "money":
-# 			date1 = AESRate.objects.filter(valid_date__lte=start, name=income_type).order_by("-valid_date").first().valid_date
-# 			date2 = end
-# 			rates = AESRate.objects.filter(valid_date__gte=date1, valid_date__lt=date2, name=income_type).order_by("-valid_date").values("range_start", "range_end", "te", "tusd", "valid_date")
-
-# 			for index, item in enumerate(plot):
-# 				date_found = False
-
-# 				for rate in rates:
-
-# 					if rate["valid_date"] <= datetime.strptime(plot[index][0], "%Y-%m-%d").date() and not date_found:
-# 						date_found = True
-
-# 						# comparando os valores -> passando para kw
-# 						if rate["range_start"]:
-# 							if plot[index][1]*0.001 < rate["range_start"]:
-# 								date_found = False
-								
-# 						if rate["range_end"]:
-# 							if plot[index][1]*0.001 > rate["range_end"]:
-# 								date_found = False
-
-# 						if date_found:
-# 							plot[index][1] = plot[index][1] * float(rate["tusd"] + rate["te"]) * mult
-
-# 		else:
-# 			plot = map(lambda set: 
-# 				[set[0], set[1] * mult], 
-# 					plot
-# 			)
-# >>>>>>> 785eca81780640ed87f7e42bdc6373e300034322
-
 def formatIntegrate(plotData, integrate):
 	plotData = sorted(plotData, key=lambda x: x[0])
 	if integrate:
@@ -332,7 +296,6 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 		)
 
 	elif timeRange == "monthly":
-		import pdb; pdb.set_trace()
 		end = get_last_day_of_month(end)
 		qs = qs.filter(moment__gte=start, moment__lte=end)
 		qs = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month')
@@ -342,7 +305,6 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat(timeRange)), set['voltage_avg'] * set['current_avg'], set['equipment_id']], 
 				qs
 		)
-
 
 	formatToMoney(return_json, unit, start, end, mult, income_type, dateFormat(timeRange))
 
@@ -354,6 +316,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 
 	# Foi pedido o grafico do somatorio
 	plot = []
+
 	if '' in equipmentId:
 		groups = {}
 		for obj in return_json:
@@ -367,7 +330,6 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 			for value in groups[moment]:
 				sum += value
 			plot.append([moment, sum])
-
 
 		plotDatas.append(plot)
 
