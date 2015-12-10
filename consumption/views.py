@@ -177,8 +177,6 @@ def ajaxPlot(request):
 			income_type = request.user.profile.income_type
 			integrate = request.GET.get("integrate", False)
 
-			# import pdb; pdb.set_trace()
-
 			return_json = formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal, integrate)
 
 			return HttpResponse(json.dumps({'plots': return_json}), content_type="application/json")
@@ -274,7 +272,6 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 		)
 
 	elif timeRange == "monthly":
-		import pdb; pdb.set_trace()
 		end = get_last_day_of_month(end)
 		qs = qs.filter(moment__gte=start, moment__lte=end)
 		qs = qs.extra(select={'month': "EXTRACT(month FROM moment)", 'year': "EXTRACT(year FROM moment)"}).values('month')
@@ -284,7 +281,6 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat(timeRange)), set['voltage_avg'] * set['current_avg'], set['equipment_id']], 
 				qs
 		)
-
 
 	formatToMoney(return_json, unit, start, end, mult, income_type, dateFormat(timeRange))
 
@@ -296,6 +292,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 
 	# Foi pedido o grafico do somatorio
 	plot = []
+
 	if '' in equipmentId:
 		groups = {}
 		for obj in return_json:
@@ -309,7 +306,6 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 			for value in groups[moment]:
 				sum += value
 			plot.append([moment, sum])
-
 
 		plotDatas.append(plot)
 
