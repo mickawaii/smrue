@@ -1,7 +1,7 @@
 from django.db import models
 
 class Equipment(models.Model):
-	MEASUREMENT_UNITS = (("w", "W"), ("kw", "kW"))
+	MEASUREMENT_UNITS = (("W", "w"), ("kW", "kw"))
 
 	name = models.CharField(max_length=255)
 	nominal_power = models.FloatField(blank=True, null=True)

@@ -232,17 +232,35 @@ def formatToMoney(plotData, unit, start, end, mult, income_type, dateFormat):
 		for index, item in enumerate(plotData):
 			plotData[index][1] = plotData[index][1] * mult
 
-def formatIntegrate(plotData, integrate):
+def formatIntegrate(plotData, integrate, timeRange, timeFormat):
 	plotData = sorted(plotData, key=lambda x: x[0])
 	if integrate:
 		if integrate == True or integrate in ["true", "True"]:
-			sum = 0
-			for index in range(len(plotData)):
-				if index == 0:
-					sum = plotData[0][1]
-				else:
-					sum = sum + plotData[index][1]
-					plotData[index][1] = sum
+			if timeRange == "hourly":
+				sum = 0
+				for index in range(len(plotData)):
+					if index == 0:
+						sum = plotData[0][1]
+					else:
+						sum = sum + plotData[index][1]
+						plotData[index][1] = sum
+			elif timeRange == "daily":
+				sum = 0
+				for index in range(len(plotData)):
+					if index == 0:
+						sum = plotData[0][1] * 24
+					else:
+						sum = sum + plotData[index][1] * 24
+						plotData[index][1] = sum
+			elif timeRange == "monthly":
+				sum = 0
+				for index in range(len(plotData)):
+					timeDate = datetime.strptime(plotData[index][0], timeFormat)
+					if index == 0:
+						sum = plotData[0][1] * 24 * get_last_day_of_month(timeDate)
+					else:
+						sum = sum + plotData[index][1] * 24 * get_last_day_of_month(timeDate)
+						plotData[index][1] = sum
 
 def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate, income_type):
 	return_json = None
@@ -325,7 +343,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 	# formatToMoney(return_json, unit, start, end, mult, incomeType)
 
 	for plotIndex in range(len(return_json)):
-		formatIntegrate(return_json[plotIndex], integrate)
+		formatIntegrate(return_json[plotIndex], integrate, timeRange, dateFormat(timeRange))
 
 	return return_json
 
