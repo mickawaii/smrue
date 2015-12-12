@@ -119,7 +119,10 @@ $(function(){
 	var replotPlot = function(plots, timeRange){
 		var plotTitle = "";
 		var xFormat = "";
-		var label = $(measurementInputSelector).find("option:selected").data("label");
+		var label = $(measurementInputSelector).find("option:selected").val();
+		if($(integrateInputSelector).is(":checked")){
+			label += "h";
+		}
 		var yFormat = $(measurementInputSelector).find("option:selected").data("yformat");
 
 		plotTitle = label+" x Data";
