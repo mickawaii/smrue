@@ -12,8 +12,8 @@ from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm, Pass
 from smrue.widgets import DatePicker
 
 class ConfigForm(forms.Form):
-	income_type_choices = [("", "-----")]+sorted([(val, val) for val in set(AESRate.objects.annotate(max_valid_date=Max("valid_date")).filter(valid_date=F('max_valid_date')).values_list("name", flat=True))])
-	income_type = forms.CharField(label='Tipo de Renda', widget=forms.Select(choices=income_type_choices, attrs={'class': 'form-control'}))
+	income_type_choices = [("", "-----")]+[(val, val) for val in set(AESRate.objects.annotate(max_valid_date=Max("valid_date")).filter(valid_date=F('max_valid_date')).values_list("name", flat=True))]
+	income_type = forms.CharField(label='Tipo de Renda', widget=forms.Select(choices=sorted(income_type_choices), attrs={'class': 'form-control'}))
 	equipments = forms.CharField(required=False, widget=forms.HiddenInput())
 
 class UserSetupForm(UserCreationForm):

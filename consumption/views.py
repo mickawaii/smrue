@@ -27,6 +27,7 @@ import traceback
 from django.db import connection
 import calendar
 from django.db import transaction
+from django.utils import timezone
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import ValidationError
 from pytz import NonExistentTimeError
@@ -87,7 +88,8 @@ def create(request):
 
 			if current > 0:
 				if voltage > 0:
-					Consumption.new(datetime.now(), current, voltage, equipment.id).save()
+					now = timezone.make_aware(datetime.now(),timezone.get_default_timezone())
+					Consumption.new(now, current, voltage, equipment.id).save()
 
 			return HttpResponse(status=201)
 		else:
