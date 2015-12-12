@@ -3,6 +3,7 @@
 from django.forms import ModelForm
 from django import forms
 from django.contrib.auth.models import Group, User
+from configuration.models import Profile
 from aes_rate.models import AESRate
 from equipment.models import Equipment
 from django.db.models import F, Max
@@ -11,7 +12,7 @@ from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm, Pass
 from smrue.widgets import DatePicker
 
 class ConfigForm(forms.Form):
-	income_type_choices = [("", "-----")]+[(val, val) for val in sorted(set(AESRate.objects.annotate(max_valid_date=Max("valid_date")).filter(valid_date=F('max_valid_date')).values_list("name", flat=True)))]
+	income_type_choices = [("", "-----")]+sorted([(val, val) for val in set(AESRate.objects.annotate(max_valid_date=Max("valid_date")).filter(valid_date=F('max_valid_date')).values_list("name", flat=True))])
 	income_type = forms.CharField(label='Tipo de Renda', widget=forms.Select(choices=income_type_choices, attrs={'class': 'form-control'}))
 	equipments = forms.CharField(required=False, widget=forms.HiddenInput())
 
@@ -45,7 +46,8 @@ class UserEditForm(ModelForm):
 	last_name = forms.CharField(required=False, label='Sobrenome', widget=forms.TextInput(attrs={'class': 'form-control'}))
 
 	# extra fields
-	income_type = forms.CharField(label='Tipo de Renda', widget=forms.Select(choices=[(val["name"], val["name"]) for val in AESRate.objects.values("name").distinct()], attrs={'class': 'form-control'}))
+	income_type_choices = [("", "-----")]+sorted([(val, val) for val in set(AESRate.objects.annotate(max_valid_date=Max("valid_date")).filter(valid_date=F('max_valid_date')).values_list("name", flat=True))])
+	income_type = forms.CharField(label='Tipo de Renda', widget=forms.Select(choices=income_type_choices, attrs={'class': 'form-control'}))
 
 	class Meta:
 		model = User
