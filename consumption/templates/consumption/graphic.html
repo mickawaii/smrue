@@ -150,7 +150,7 @@
 
 								<select class="unit form-control">
 									{% for acronym, v in measurement_units %}
-										<option data-label="Potência" data-yformat="%.3f {{acronym}}" value="{{acronym}}">{{ acronym }}</option>
+										<option data-label="Potência" data-yformat="%.2f {{acronym}}" value="{{acronym}}">{{ v }}</option>
 									{% endfor %}
 									<option data-label="R$" data-yformat="R$ %.2f" value="money">R$</option>
 								</select>

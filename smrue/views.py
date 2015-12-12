@@ -27,7 +27,7 @@ class IndexView(TemplateView):
 		return context
 
 class HomeView(TemplateView):
-	template_name = 'home.html'
+	template_name = 'index.html'
 
 	def get_context_data(self, **kwargs):
 		context = super(HomeView, self).get_context_data(**kwargs)
