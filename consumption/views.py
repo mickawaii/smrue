@@ -175,7 +175,7 @@ def ajaxPlot(request):
 		try:
 			goal = request.GET.get("goal", False)
 			timeRange = request.GET.get("timeRange", "daily")
-			timeFormat = Consumption.DATE_FORMAT[timeRange]
+			timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
 			unit = request.GET.get("measurement", "kw")
 			today = datetime_timezone_aware(datetime.now())
 			dateTimeStart = request.GET.get("xStart", datetime_timezone_aware(datetime(today.year, today.month, today.day, 0, 0)).strftime(timeFormat))
@@ -283,10 +283,10 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 
 
 	if timeRange == "hourly":
-		qs = qs.values('moment', 'current', 'voltage', 'equipment_id').filter(moment__range=[start, end])
+		qs = qs.filter(moment__range=[start, end]).extra({"hour": "date_trunc('hour', moment)"}).values('hour', 'equipment_id').annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('hour', 'voltage_avg', 'current_avg', 'equipment_id').order_by('hour')
 
 		return_json = map(lambda set: 
-			[set['moment'].astimezone(timezone.get_default_timezone()).strftime(Consumption.DATE_FORMAT[timeRange]), set['voltage'] * set['current'], set['equipment_id']], 
+			[set['hour'].astimezone(timezone.get_default_timezone()).strftime(Consumption.DATE_FORMAT[timeRange]), set['voltage_avg'] * set['current_avg'], set['equipment_id']], 
 				qs
 		)
 
@@ -295,7 +295,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 		qs = qs.filter(moment__gte=start, moment__lt=end).extra({'moment': "date(moment)"}).values('moment', 'equipment_id').annotate(current=Avg('current'), voltage=Avg('voltage'))
 
 		return_json = map(lambda set: 
-			[set['moment'].astimezone(timezone.get_default_timezone()).strftime(Consumption.DATE_FORMAT[timeRange]), set['voltage'] * set['current'], set['equipment_id']], 
+			[set['moment'].strftime(Consumption.DATE_FORMAT[timeRange]), set['voltage'] * set['current'], set['equipment_id']], 
 				qs
 		)
 
@@ -361,7 +361,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 	# formatToMoney(return_json, unit, start, end, mult, incomeType)
 
 	for plotIndex in range(len(return_json)):
-		formatIntegrate(return_json[plotIndex], integrate, timeRange, Consumption.DATE_FORMAT[timeRange])
+		formatIntegrate(return_json[plotIndex], integrate, timeRange, Consumption.DATE_FORMAT_BR[timeRange])
 
 	return return_json
 
@@ -404,7 +404,7 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 	aggregatedQuery= None
 	# 0.001 para kW
 	mult = 0.001 if unit == Equipment.MEASUREMENT_UNITS[1][0] else 1
-	timeFormat = Consumption.DATE_FORMAT[timeRange]
+	timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
 	start = datetime_timezone_aware(datetime.strptime(dateTimeStart,timeFormat))
 	end = datetime_timezone_aware(datetime.strptime(dateTimeEnd,timeFormat))
 

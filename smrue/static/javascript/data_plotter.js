@@ -120,7 +120,7 @@ $(function(){
 		var plotTitle = "";
 		var xFormat = "";
 		var label = $(measurementInputSelector).find("option:selected").val();
-		if($(integrateInputSelector).is(":checked")){
+		if($(integrateInputSelector).is(":checked") && label != "money"){
 			label += "h";
 		}
 		var yFormat = $(measurementInputSelector).find("option:selected").data("yformat");
@@ -130,25 +130,25 @@ $(function(){
 
 		plotTitle = label+" x Data";
 		if(timeRange == "hourly"){
-			xFormat = "%d/%m/%y %H:%M";
-			tick = "1 minute";
-			minTime = xStart;
-			maxTime = xEnd;
+			xFormat = "%H:%M";
+			tick = null;
+			minTime = null;
+			maxTime = null;
 		} else if (timeRange == "daily") {
-			xFormat = "%d/%m/%y";
-			tick = "1 hour";
-			minTime = xStart;
-			maxTime = xEnd;
+			xFormat = "%d-%m-%y";
+			tick = null
+			minTime = null;
+			maxTime = null;
 		} else if (timeRange == "monthly") {
-			xFormat = "%m/%y";
-			tick = "1 day";
-			minTime = xStart;
-			maxTime = xEnd;
+			xFormat = "%m-%y";
+			tick = null;
+			minTime = null;
+			maxTime = null;
 		} else if (timeRange == "test"){
 			xFormat = "%H:%M:%S";
 			tick = "1 hour";
 			minTime = moment().startOf('day').add(12, "hour").add(30, "minute").format("YYYY-MM-DD HH:MM:SS");
-			maxTime = moment().add(1, "hour").format("YYYY-MM-DD HH:MM:SS");
+			maxTime = moment().add(2, "hour").format("YYYY-MM-DD HH:MM:SS");
 		};
 
 		// desempacotar os dados...
@@ -157,11 +157,7 @@ $(function(){
 		var tempData = [];
 		for(var key in plots){
 			legends.push(translate(key));
-			for(var i = 0; i < plots[key].length; i++){
-				tempData.push([plots[key][i][0], plots[key][i][1]]);
-			}
-			data.push(tempData);
-			tempData = [];
+			data.push(plots[key]);
 		}
 
 		var newOptions = 
@@ -177,7 +173,6 @@ $(function(){
 						pad: 1.0,
 						label: 'Data',
 						renderer: $.jqplot.DateAxisRenderer,
-						tickInterval: tick,
 						min: minTime,
   					max: maxTime
 					},
