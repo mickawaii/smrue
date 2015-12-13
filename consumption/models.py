@@ -11,8 +11,8 @@ class Consumption(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 
-	DATE_FORMAT_BR = {"daily": "%d-%m-%Y", "hourly": "%d-%m-%Y %H:%M", "monthly": "%m-%Y"}
-	DATE_FORMAT = {"daily": "%Y-%m-%d", "hourly": "%Y-%m-%d %H:%M", "monthly": "%Y-%m"}
+	DATE_FORMAT_BR = {"daily": "%d-%m-%Y", "hourly": "%d-%m-%Y %H:%M", "monthly": "%m-%Y", "test": "%d-%m-%Y %H:%M"}
+	DATE_FORMAT = {"daily": "%Y-%m-%d", "hourly": "%Y-%m-%d %H:%M", "monthly": "%Y-%m", "test": "%Y-%m-%d %H:%M"}
 
 	@classmethod
 	def new(cls, moment, current, voltage, equipment_id):

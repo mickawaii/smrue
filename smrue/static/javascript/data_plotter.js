@@ -132,15 +132,21 @@ $(function(){
 			xFormat = "%d/%m/%y";
 		} else if (timeRange == "monthly") {
 			xFormat = "%m/%y";
+		} else if (timeRange == "test"){
+			xFormat = "%H:%M:%S";
 		};
 
 		// desempacotar os dados...
 		var data = [];
 		var legends = [];
-
+		var tempData = [];
 		for(var key in plots){
 			legends.push(translate(key));
-			data.push(plots[key]);
+			for(var i = 0; i < plots[key].length; i++){
+				tempData.push([plots[key][i][0], plots[key][i][1]]);
+			}
+			data.push(tempData);
+			tempData = [];
 		}
 
 		var newOptions = 
@@ -148,6 +154,7 @@ $(function(){
 				title: plotTitle,
 				axes:{
 					xaxis:{
+						tickInterval : '1 second',
 						pad: 1.0,
 						label: 'Data',
 						renderer: $.jqplot.DateAxisRenderer,
@@ -177,8 +184,10 @@ $(function(){
 	$(buttonSelector).click(function(){
 		var dateRangeInput = $(dateInputSelector).val();
 		var measurement = $(measurementInputSelector).val();
-		var xStart = dateRangeInput.split(" - ")[0].split("/").join("-");
-		var xEnd = dateRangeInput.split(" - ")[1].split("/").join("-");
+		if(dateRangeInput != undefined){
+			var xStart = dateRangeInput.split(" - ")[0].split("/").join("-");
+			var xEnd = dateRangeInput.split(" - ")[1].split("/").join("-");
+		}
 		var timeRange = $(timeRangeInputSelector).data("type");
 		var yIntegrate = $(integrateInputSelector).is(":checked");
 		var showGoals = $(goalInputSelector).is(":checked");

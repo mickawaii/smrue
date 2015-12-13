@@ -28,6 +28,8 @@ from django.db import connection
 import calendar
 from django.db import transaction
 from django.utils import timezone
+import pytz
+
 from django.utils.datastructures import MultiValueDictKeyError
 from django.core.exceptions import ValidationError
 from pytz import NonExistentTimeError
@@ -60,6 +62,9 @@ def get_first_day_of_month(dt, d_years=0, d_months=0):
 def get_last_day_of_month(dt):
 	return get_first_day_of_month(dt, 0, 1) + timedelta(-1)
 
+def datetime_timezone_aware(datetime):
+	return timezone.make_aware(datetime, timezone.get_default_timezone())
+
 # Parâmetros usados:
 	# code: código do sensor
 	# voltage: medida de voltagem
@@ -88,8 +93,7 @@ def create(request):
 
 			if current > 0:
 				if voltage > 0:
-					now = timezone.make_aware(datetime.now(),timezone.get_default_timezone())
-					Consumption.new(now, current, voltage, equipment.id).save()
+					Consumption.new(datetime_timezone_aware(datetime.now()), current, voltage, equipment.id).save()
 
 			return HttpResponse(status=201)
 		else:
@@ -110,7 +114,8 @@ def importCSV(request):
 			with transaction.atomic():
 				for line in csv_reader:
 					lineNumber += 1
-					Consumption.new(line['moment'], line['current'], line['voltage'], line['equipment_id']).save()
+					date = datetime_timezone_aware(datetime.strptime(line['moment'], "%Y-%m-%d %H:%M:%S%z"))
+					Consumption.new(datetime_timezone_aware(date), line['current'], line['voltage'], line['equipment_id']).save()
 			url = reverse('consumption:graphic')
 			return HttpResponseRedirect(url)
 
@@ -165,14 +170,16 @@ def exportCSV(request):
 # 	xEnd (time)
 # 	equipmentId
 def ajaxPlot(request):
+	
 	if request.method == 'GET':
 		try:
 			goal = request.GET.get("goal", False)
 			timeRange = request.GET.get("timeRange", "daily")
 			timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
 			unit = request.GET.get("measurement", "kw")
-			dateTimeStart = request.GET.get("xStart", datetime.now().strftime(timeFormat))
-			dateTimeEnd = request.GET.get("xEnd", (datetime.strptime(dateTimeStart, timeFormat) + timedelta(days=-30)).strftime(timeFormat))
+			today = datetime_timezone_aware(datetime.now())
+			dateTimeStart = request.GET.get("xStart", datetime_timezone_aware(datetime(today.year, today.month, today.day - 1, 0, 0)).strftime(timeFormat))
+			dateTimeEnd = request.GET.get("xEnd", (datetime_timezone_aware(datetime(today.year, today.month, today.day - 1, 23, 59))).strftime(timeFormat))
 			# dateTimeStart = "01-09-2014"
 			# dateTimeEnd = "01-10-2014"
 			equipmentId = request.GET.getlist("equipmentId[]", None)
@@ -185,14 +192,6 @@ def ajaxPlot(request):
 		except Exception as e:
 			print unicode(e.message)
 			return HttpResponse(json.dumps({'plots': [[[]]]}), content_type="application/json")
-
-def dateFormat(timeRange):
-	if timeRange == "hourly":
-		return "%Y-%m-%d %H:%M"
-	elif timeRange == "daily":
-		return "%Y-%m-%d"
-	elif timeRange == "monthly":
-		return "%Y-%m"
 
 def formatToMoney(plotData, unit, start, end, mult, income_type, dateFormat):
 	if unit == "money":
@@ -211,7 +210,7 @@ def formatToMoney(plotData, unit, start, end, mult, income_type, dateFormat):
 
 			for rate in rates:
 
-				if rate["valid_date"] <= datetime.strptime(plotData[index][0], dateFormat).date() and not date_found:
+				if rate["valid_date"] <= datetime_timezone_aware(datetime.strptime(plotData[index][0], dateFormat).date()) and not date_found:
 					date_found = True
 
 					# comparando os valores -> passando para kw
@@ -255,7 +254,7 @@ def formatIntegrate(plotData, integrate, timeRange, timeFormat):
 			elif timeRange == "monthly":
 				sum = 0
 				for index in range(len(plotData)):
-					timeDate = datetime.strptime(plotData[index][0], timeFormat)
+					timeDate = datetime_timezone_aware(datetime.strptime(plotData[index][0], timeFormat))
 					if index == 0:
 						sum = plotData[0][1] * 24 * get_last_day_of_month(timeDate)
 					else:
@@ -278,7 +277,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 		qs = qs.values('moment', 'current', 'voltage', 'equipment_id').filter(moment__range=[start, end])
 
 		return_json = map(lambda set: 
-			[set['moment'].strftime(dateFormat(timeRange)), set['voltage'] * set['current'], set['equipment_id']], 
+			[set['moment'].astimezone(timezone.get_default_timezone()).strftime(Consumption.DATE_FORMAT_BR[timeRange]), set['voltage'] * set['current'], set['equipment_id']], 
 				qs
 		)
 
@@ -287,7 +286,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 		qs = qs.filter(moment__gte=start, moment__lt=end).extra({'moment': "date(moment)"}).values('moment', 'equipment_id').annotate(current=Avg('current'), voltage=Avg('voltage'))
 
 		return_json = map(lambda set: 
-			[set['moment'].strftime(dateFormat(timeRange)), set['voltage'] * set['current'], set['equipment_id']], 
+			[set['moment'].astimezone(timezone.get_default_timezone()).strftime(Consumption.DATE_FORMAT_BR[timeRange]), set['voltage'] * set['current'], set['equipment_id']], 
 				qs
 		)
 
@@ -298,11 +297,21 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 		qs = qs.annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('equipment_id', 'month', 'year', 'current_avg', 'voltage_avg')
 
 		return_json = map(lambda set: 
-			[datetime(int(set['year']), int(set['month']), 1).strftime(dateFormat(timeRange)), set['voltage_avg'] * set['current_avg'], set['equipment_id']], 
+			[datetime(int(set['year']), int(set['month']), 1).strftime(Consumption.DATE_FORMAT_BR[timeRange]), set['voltage_avg'] * set['current_avg'], set['equipment_id']], 
 				qs
 		)
 
-	formatToMoney(return_json, unit, start, end, mult, income_type, dateFormat(timeRange))
+	
+	elif timeRange == "test":
+		
+		qs = qs.values('moment', 'current', 'voltage', 'equipment_id').filter(moment__range=[start, end])
+
+		return_json = map(lambda set: 
+			[set['moment'].astimezone(timezone.get_default_timezone()).strftime(Consumption.DATE_FORMAT_BR[timeRange]), set['voltage'] * set['current'], set['equipment_id']], 
+				qs
+		)
+
+	formatToMoney(return_json, unit, start, end, mult, income_type, Consumption.DATE_FORMAT_BR[timeRange])
 
 	momentIndex = 0
 	powerIndex = 1
@@ -341,7 +350,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 	# formatToMoney(return_json, unit, start, end, mult, incomeType)
 
 	for plotIndex in range(len(return_json)):
-		formatIntegrate(return_json[plotIndex], integrate, timeRange, dateFormat(timeRange))
+		formatIntegrate(return_json[plotIndex], integrate, timeRange, Consumption.DATE_FORMAT_BR[timeRange])
 
 	return return_json
 
@@ -363,7 +372,7 @@ def getGoalData(equipmentId, consumptionData, dateFormat, start, end):
 		goalList = []
 		for point in plot:
 			newPoint = [point[0], 0]
-			pointDate = datetime.strptime(point[0], dateFormat)
+			pointDate = datetime_timezone_aware(datetime.strptime(point[0], dateFormat))
 
 			for goal in goals:
 				if goal.yearmonth_start <= pointDate.date():
@@ -379,19 +388,21 @@ def getGoalData(equipmentId, consumptionData, dateFormat, start, end):
 
 
 def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentId, income_type, goal, integrate):
+	
+	
 	aggregatedQuery= None
 	# 0.001 para kW
 	mult = 0.001 if unit == Equipment.MEASUREMENT_UNITS[1][0] else 1
 	timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
-	start = datetime.strptime(dateTimeStart,timeFormat)
-	end = datetime.strptime(dateTimeEnd,timeFormat)
+	start = datetime_timezone_aware(datetime.strptime(dateTimeStart,timeFormat))
+	end = datetime_timezone_aware(datetime.strptime(dateTimeEnd,timeFormat))
 
 	returnPlots = []
 
 	consumptionData = getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate, income_type)
 
 	if goal ==  "true":
-		goalData = getGoalData(equipmentId, consumptionData, dateFormat(timeRange), start, end)
+		goalData = getGoalData(equipmentId, consumptionData, Consumption.DATE_FORMAT_BR[timeRange], start, end)
 		if goalData != None and len(goalData) > 0:
 			consumptionData += goalData
 

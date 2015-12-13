@@ -87,6 +87,7 @@
 							<div class="col-sm-12">
 								<!-- Nav tabs -->
 								<ul class="nav nav-tabs render-options" role="tablist">
+									<li role="presentation"><a href="#test" aria-controls="test" role="tab" data-toggle="tab">Teste</a></li>
 									<li role="presentation" class="active"><a href="#hour" aria-controls="hour" role="tab" data-toggle="tab">Hora</a></li>
 									<li role="presentation"><a href="#day" aria-controls="day" role="tab" data-toggle="tab">Dia</a></li>
 									<li role="presentation"><a href="#month" aria-controls="month" role="tab" data-toggle="tab">Mês</a></li>
@@ -94,11 +95,15 @@
 
 								<!-- Tab panes -->
 								<div class="tab-content">
+									<div role="tabpanel" class="tab-pane" id="test" data-type="test">
+									</div>
+
 									<div role="tabpanel" class="tab-pane active" id="hour" data-type="hourly">
 										<!-- Filtro por hora -->
 										<label>Data (por hora): </label>
 										<input class="date-input date-time-range-picker form-control"/>
 									</div>
+
 
 									<div role="tabpanel" class="tab-pane" id="day" data-type="daily">
 										<!-- Filtro por dia -->
