@@ -175,7 +175,7 @@ def ajaxPlot(request):
 		try:
 			goal = request.GET.get("goal", False)
 			timeRange = request.GET.get("timeRange", "daily")
-			timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
+			timeFormat = Consumption.DATE_FORMAT[timeRange]
 			unit = request.GET.get("measurement", "kw")
 			today = datetime_timezone_aware(datetime.now())
 			dateTimeStart = request.GET.get("xStart", datetime_timezone_aware(datetime(today.year, today.month, today.day, 0, 0)).strftime(timeFormat))
@@ -210,7 +210,7 @@ def formatToMoney(plotData, unit, start, end, mult, income_type, dateFormat):
 
 			for rate in rates:
 
-				if rate["valid_date"] <= datetime_timezone_aware(datetime.strptime(plotData[index][0], dateFormat).date()) and not date_found:
+				if rate["valid_date"] <= datetime_timezone_aware(datetime.strptime(plotData[index][0], dateFormat)).date() and not date_found:
 					date_found = True
 
 					# comparando os valores -> passando para kw
@@ -261,12 +261,13 @@ def formatIntegrate(plotData, integrate, timeRange, timeFormat):
 						sum = sum + plotData[index][1] * 24 * get_last_day_of_month(timeDate)
 						plotData[index][1] = sum
 			elif timeRange == "test":
+
 				sum = 0
 				for index in range(len(plotData)):
 					if index == 0:
-						sum = plotData[0][1] * 1/6
+						sum = plotData[0][1] * 1/360
 					else:
-						sum = sum + plotData[index][1] * 1/6
+						sum = sum + plotData[index][1] * 1/360
 					plotData[index][1] = sum
 
 def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate, income_type):
@@ -319,7 +320,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 				qs
 		)
 
-	formatToMoney(return_json, unit, start, end, mult, income_type, Consumption.DATE_FORMAT_BR[timeRange])
+	formatToMoney(return_json, unit, start, end, mult, income_type, Consumption.DATE_FORMAT[timeRange])
 
 	momentIndex = 0
 	powerIndex = 1
@@ -346,6 +347,8 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 
 		plotDatas.append(plot)
 
+
+
 	# Separando por id 
 	for id in equipmentId:
 		if id != "":
@@ -358,7 +361,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 	# formatToMoney(return_json, unit, start, end, mult, incomeType)
 
 	for plotIndex in range(len(return_json)):
-		formatIntegrate(return_json[plotIndex], integrate, timeRange, Consumption.DATE_FORMAT_BR[timeRange])
+		formatIntegrate(return_json[plotIndex], integrate, timeRange, Consumption.DATE_FORMAT[timeRange])
 
 	return return_json
 
@@ -373,8 +376,9 @@ def getGoalData(equipmentId, consumptionData, dateFormat, start, end):
 		qs.filter(equipment=Equipment.objects.filter(pk__in = ids))
 
 	goals = qs.filter(yearmonth_start__gte = start, yearmonth_end__lte = end) | \
-					qs.filter(yearmonth_start__lte = start, yearmonth_start__gte = start) | \
-					qs.filter(yearmonth_start__lte = end, yearmonth_start__gte = end)
+					qs.filter(yearmonth_start__lte = start, yearmonth_end__gte = start) | \
+					qs.filter(yearmonth_start__lte = end, yearmonth_end__gte = end)
+
 
 	for plot in consumptionData:
 		goalList = []
@@ -383,9 +387,8 @@ def getGoalData(equipmentId, consumptionData, dateFormat, start, end):
 			pointDate = datetime_timezone_aware(datetime.strptime(point[0], dateFormat))
 
 			for goal in goals:
-				if goal.yearmonth_start <= pointDate.date():
-					if goal.yearmonth_end <= pointDate.date():
-						newPoint[1] = goal.value_absolute
+				if goal.yearmonth_start <= pointDate.date() and goal.yearmonth_end >= pointDate.date():
+					newPoint[1] = float(goal.value_absolute)
 
 			goalList.append(newPoint)
 
@@ -401,7 +404,7 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 	aggregatedQuery= None
 	# 0.001 para kW
 	mult = 0.001 if unit == Equipment.MEASUREMENT_UNITS[1][0] else 1
-	timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
+	timeFormat = Consumption.DATE_FORMAT[timeRange]
 	start = datetime_timezone_aware(datetime.strptime(dateTimeStart,timeFormat))
 	end = datetime_timezone_aware(datetime.strptime(dateTimeEnd,timeFormat))
 
@@ -410,7 +413,7 @@ def formatDataToPlotData(timeRange, dateTimeStart, dateTimeEnd, unit, equipmentI
 	consumptionData = getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate, income_type)
 
 	if goal ==  "true":
-		goalData = getGoalData(equipmentId, consumptionData, Consumption.DATE_FORMAT_BR[timeRange], start, end)
+		goalData = getGoalData(equipmentId, consumptionData, Consumption.DATE_FORMAT[timeRange], start, end)
 		if goalData != None and len(goalData) > 0:
 			consumptionData += goalData
 
