@@ -178,8 +178,8 @@ def ajaxPlot(request):
 			timeFormat = Consumption.DATE_FORMAT_BR[timeRange]
 			unit = request.GET.get("measurement", "kw")
 			today = datetime_timezone_aware(datetime.now())
-			dateTimeStart = request.GET.get("xStart", datetime_timezone_aware(datetime(today.year, today.month, today.day - 1, 0, 0)).strftime(timeFormat))
-			dateTimeEnd = request.GET.get("xEnd", (datetime_timezone_aware(datetime(today.year, today.month, today.day - 1, 23, 59))).strftime(timeFormat))
+			dateTimeStart = request.GET.get("xStart", datetime_timezone_aware(datetime(today.year, today.month, today.day, 0, 0)).strftime(timeFormat))
+			dateTimeEnd = request.GET.get("xEnd", datetime_timezone_aware(datetime(today.year, today.month, today.day, 23, 59)).strftime(timeFormat))
 			# dateTimeStart = "01-09-2014"
 			# dateTimeEnd = "01-10-2014"
 			equipmentId = request.GET.getlist("equipmentId[]", None)
@@ -285,7 +285,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 		qs = qs.values('moment', 'current', 'voltage', 'equipment_id').filter(moment__range=[start, end])
 
 		return_json = map(lambda set: 
-			[set['moment'].astimezone(timezone.get_default_timezone()).strftime(Consumption.DATE_FORMAT_BR[timeRange]), set['voltage'] * set['current'], set['equipment_id']], 
+			[set['moment'].astimezone(timezone.get_default_timezone()).strftime(Consumption.DATE_FORMAT[timeRange]), set['voltage'] * set['current'], set['equipment_id']], 
 				qs
 		)
 
@@ -294,7 +294,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 		qs = qs.filter(moment__gte=start, moment__lt=end).extra({'moment': "date(moment)"}).values('moment', 'equipment_id').annotate(current=Avg('current'), voltage=Avg('voltage'))
 
 		return_json = map(lambda set: 
-			[set['moment'].astimezone(timezone.get_default_timezone()).strftime(Consumption.DATE_FORMAT_BR[timeRange]), set['voltage'] * set['current'], set['equipment_id']], 
+			[set['moment'].astimezone(timezone.get_default_timezone()).strftime(Consumption.DATE_FORMAT[timeRange]), set['voltage'] * set['current'], set['equipment_id']], 
 				qs
 		)
 
@@ -305,7 +305,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 		qs = qs.annotate(current_avg=Avg('current'), voltage_avg=Avg('voltage')).values('equipment_id', 'month', 'year', 'current_avg', 'voltage_avg')
 
 		return_json = map(lambda set: 
-			[datetime(int(set['year']), int(set['month']), 1).strftime(Consumption.DATE_FORMAT_BR[timeRange]), set['voltage_avg'] * set['current_avg'], set['equipment_id']], 
+			[datetime(int(set['year']), int(set['month']), 1).strftime(Consumption.DATE_FORMAT[timeRange]), set['voltage_avg'] * set['current_avg'], set['equipment_id']], 
 				qs
 		)
 
@@ -315,7 +315,7 @@ def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate
 		qs = qs.values('moment', 'current', 'voltage', 'equipment_id').filter(moment__range=[start, end])
 
 		return_json = map(lambda set: 
-			[set['moment'].astimezone(timezone.get_default_timezone()).strftime(Consumption.DATE_FORMAT_BR[timeRange]), set['voltage'] * set['current'], set['equipment_id']], 
+			[set['moment'].astimezone(timezone.get_default_timezone()).strftime(Consumption.DATE_FORMAT[timeRange]), set['voltage'] * set['current'], set['equipment_id']], 
 				qs
 		)
 

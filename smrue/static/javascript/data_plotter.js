@@ -145,10 +145,10 @@ $(function(){
 			minTime = xStart;
 			maxTime = xEnd;
 		} else if (timeRange == "test"){
-			xFormat = "%H:%M";
+			xFormat = "%H:%M:%S";
 			tick = "1 hour";
-			minTime = moment().subtract(1, "day").startOf('day').add(8, "hour").format("YYYY-MM-DD HH:MM:SS");
-			maxTime = moment().subtract(1, "day").endOf('day').subtract(0, "hour").format("YYYY-MM-DD HH:MM:SS");
+			minTime = moment().startOf('day').add(12, "hour").add(30, "minute").format("YYYY-MM-DD HH:MM:SS");
+			maxTime = moment().add(1, "hour").format("YYYY-MM-DD HH:MM:SS");
 		};
 
 		// desempacotar os dados...
