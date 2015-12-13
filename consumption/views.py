@@ -260,6 +260,14 @@ def formatIntegrate(plotData, integrate, timeRange, timeFormat):
 					else:
 						sum = sum + plotData[index][1] * 24 * get_last_day_of_month(timeDate)
 						plotData[index][1] = sum
+			elif timeRange == "test":
+				sum = 0
+				for index in range(len(plotData)):
+					if index == 0:
+						sum = plotData[0][1] * 1/6
+					else:
+						sum = sum + plotData[index][1] * 1/6
+					plotData[index][1] = sum
 
 def getConsumptionData(timeRange, equipmentId, unit, start, end, mult, integrate, income_type):
 	return_json = None

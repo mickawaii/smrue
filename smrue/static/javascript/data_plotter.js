@@ -116,7 +116,7 @@ $(function(){
 		return translation;	
 	}
 
-	var replotPlot = function(plots, timeRange){
+	var replotPlot = function(plots, timeRange, xStart, xEnd){
 		var plotTitle = "";
 		var xFormat = "";
 		var label = $(measurementInputSelector).find("option:selected").val();
@@ -124,16 +124,31 @@ $(function(){
 			label += "h";
 		}
 		var yFormat = $(measurementInputSelector).find("option:selected").data("yformat");
+		var tick = "";
+		var minTime = "";
+		var maxTime = "";
 
 		plotTitle = label+" x Data";
 		if(timeRange == "hourly"){
 			xFormat = "%d/%m/%y %H:%M";
+			tick = "1 minute";
+			minTime = xStart;
+			maxTime = xEnd;
 		} else if (timeRange == "daily") {
 			xFormat = "%d/%m/%y";
+			tick = "1 hour";
+			minTime = xStart;
+			maxTime = xEnd;
 		} else if (timeRange == "monthly") {
 			xFormat = "%m/%y";
+			tick = "1 day";
+			minTime = xStart;
+			maxTime = xEnd;
 		} else if (timeRange == "test"){
-			xFormat = "%H:%M:%S";
+			xFormat = "%H:%M";
+			tick = "1 hour";
+			minTime = moment().subtract(1, "day").startOf('day').add(8, "hour").format("YYYY-MM-DD HH:MM:SS");
+			maxTime = moment().subtract(1, "day").endOf('day').subtract(0, "hour").format("YYYY-MM-DD HH:MM:SS");
 		};
 
 		// desempacotar os dados...
@@ -154,13 +169,17 @@ $(function(){
 				title: plotTitle,
 				axes:{
 					xaxis:{
-						tickInterval : '1 second',
+						tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+						tickOptions:{
+							formatString: xFormat,
+							angle: -30
+						},
 						pad: 1.0,
 						label: 'Data',
 						renderer: $.jqplot.DateAxisRenderer,
-						tickOptions:{
-							formatString: xFormat
-						}
+						tickInterval: tick,
+						min: minTime,
+  					max: maxTime
 					},
 					yaxis:{
 						label: label,
@@ -212,7 +231,7 @@ $(function(){
 			if (!hasData(response.plots)){
 				$("#"+chartId).html(noDataMessage);
 			} else {
-				replotPlot(response.plots, timeRange);
+				replotPlot(response.plots, timeRange, xStart, xEnd);
 			}
 		});
 		
