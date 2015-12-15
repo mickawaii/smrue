@@ -146,9 +146,11 @@ $(function(){
 			maxTime = null;
 		} else if (timeRange == "test"){
 			xFormat = "%H:%M:%S";
-			tick = "1 hour";
-			minTime = moment().startOf('day').add(12, "hour").add(30, "minute").format("YYYY-MM-DD HH:MM:SS");
-			maxTime = moment().add(2, "hour").format("YYYY-MM-DD HH:MM:SS");
+			tick = "30 minutes";
+			minTime = moment().subtract(30, "minutes").format("YYYY-MM-DD HH:MM:SS");
+			maxTime = moment().add(10, "minutes").format("YYYY-MM-DD HH:MM:SS");
+			// minTime = "2015-12-15 10:53:00";
+			// maxTime = "2015-12-15 10:58:00";
 		};
 
 		// desempacotar os dados...
