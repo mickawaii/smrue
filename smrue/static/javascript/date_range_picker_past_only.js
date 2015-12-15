@@ -19,8 +19,7 @@ $(function(){
     maxDate: moment(),
     locale: localeOptions,
     ranges: {
-      '30 dias': [moment(), moment().add(30, 'days')],
-      'Até o fim do mês': [moment(), moment().endOf('month')],
+      '30 dias': [moment().subtract(30, 'days'), moment()],
       "Mês Atual": [moment().startOf("month"), moment().endOf('month')]
     }
   })

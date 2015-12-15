@@ -80,11 +80,11 @@
 
 	{% if income_type %}
 		<div class="row">
-			<div class="col-sm-6">
+			<div class="col-sm-12">
 				<div class="panel panel-default">
 					<div class="panel-body">
 						<div class="row">
-							<div class="col-sm-12">
+							<div class="col-sm-4 with-border-right">
 								<!-- Nav tabs -->
 								<ul class="nav nav-tabs render-options" role="tablist">
 									<li role="presentation"><a href="#test" aria-controls="test" role="tab" data-toggle="tab">Teste</a></li>
@@ -117,24 +117,31 @@
 										<input class="date-input year-month-range-past hidden"/>
 
 										<div class="year-month-range-picker-past form-inline">
-											<input type="text" class="input-small start form-control"/>
+											<input type="text" class="input-tiny start form-control"/>
 											<span class="add-on">até</span>
-											<input type="text" class="input-small end form-control"/>
-										</div>
-									</div>
-
-									<div role="tabpanel" class="tab-pane" id="settings">
-										<div class="col-sm-12">
-											<button class="integrate">Integrate Plot</button>
-											<button class="power">Go back</button>
+											<input type="text" class="input-tiny end form-control"/>
 										</div>
 									</div>
 								</div>      
 							</div>
-						</div>
 
-						<div class="row">
-							<div class="col-sm-12">
+							<div class="col-sm-4">
+								<label>Equipamentos: </label><br>
+								<div class="checkbox-inline">
+									<label>
+										<input class="equipment" type="checkbox" value=""> Somado
+									</label>
+								</div>
+								{% for equip in equipments %}
+									<div class="checkbox-inline">
+										<label>
+											<input class="equipment" type="checkbox" value="{{equip.pk}}"> {{ equip.name }}
+										</label>
+									</div>
+								{% endfor %}
+							</div>
+
+							<div class="col-sm-2 with-border-right with-border-left">
 								<div class="checkbox">
 									<label>
 										<input id="boolean-integrate" type="checkbox"> Integrar gráfico
@@ -146,79 +153,59 @@
 										<input disabled="true" id="boolean-goal" type="checkbox"> Incluir meta
 									</label>
 								</div>
-							</div>
-						</div>
 
-						<div class="row">
-							<div class="col-sm-12 form-inline">
-								<label>Unidade de medida: </label>
+								<div class="">
+									<label>Unidade de medida: </label>
 
-								<select class="unit form-control">
-									{% for acronym, v in measurement_units %}
-										<option data-label="Potência" data-yformat="%.2f {{acronym}}" value="{{acronym}}">{{ v }}</option>
-									{% endfor %}
-									<option data-label="R$" data-yformat="R$ %.2f" value="money">R$</option>
-								</select>
-							</div>
-						</div>
-
-						<div class="row">
-							<div class="col-sm-12">
-								<label>Equipamentos: </label>
-							</div>
-							
-							<div class="col-sm-12">
-
-								<div class="checkbox-inline">
-									<label>
-										<input class="equipment" type="checkbox" value=""> Somado
-									</label>
+									<select class="unit form-control small">
+										{% for acronym, v in measurement_units %}
+											<option data-label="Potência" data-yformat="%.2f {{acronym}}" value="{{acronym}}">{{ v }}</option>
+										{% endfor %}
+										<option data-label="R$" data-yformat="R$ %.2f" value="money">R$</option>
+									</select>
 								</div>
-								
-								{% for equip in equipments %}
-									<div class="checkbox-inline">
-										<label>
-											<input class="equipment" type="checkbox" value="{{equip.pk}}"> {{ equip.name }}
-										</label>
-									</div>
-								{% endfor %}
-
 							</div>
 							
+							<div class="col-sm-2">
+								<div class="text-center">
+									<button role="button" type="button" class="btn btn-lg btn-info plot-button" data-url="{% url 'consumption:ajaxPlot' %}">Fazer gráfico</button>          
+								</div>
+							</div>
 						</div>
-
-					</div>
-
-					<div class="panel-footer text-center">
-						<button role="button" type="button" class="btn btn-lg btn-info plot-button" data-url="{% url 'consumption:ajaxPlot' %}">Fazer gráfico</button>          
 					</div>
 				</div>
 			</div>
+		</div>
 
-			<div class="col-sm-6" id="attachment_form">
+		<div class="row">
+			<div class="col-sm-12" id="attachment_form">
 				<div class="panel panel-default">
 					<div class="panel-body">
-						<form action="{% url 'consumption:importCSV' %}" method="POST" enctype="multipart/form-data" id="uploadform">
-							{% csrf_token %}
-							<div class="form-group">
-							<label>Escolha um arquivo:</label><input name="csv" type="file">
+						<div class="row">
+							<div class="col-sm-5 with-border-right">
+								<form action="{% url 'consumption:importCSV' %}" method="POST" enctype="multipart/form-data" id="uploadform">
+									{% csrf_token %}
+									<div class="form-group">
+										<label class="control-label">Escolha um arquivo:</label><input name="csv" type="file">
+									</div>
+									{% if csv_error %}
+										{{csv_error}}
+									{% endif %}
+									<div class="form-group">
+										<input type="submit" class="btn btn-info" value="Importar">
+									</div>
+								</form>
 							</div>
-							{% if csv_error %}
-								{{csv_error}}
-							{% endif %}
-							<div class="form-group">
-								<input type="submit" class="btn btn-info" value="Importar">
-							</div>
-						</form>
 
-						<hr>
-
-						<form action="{% url 'consumption:exportCSV' %}" method="GET" enctype="multipart/form-data" id="uploadform">
-							{% csrf_token %}
-							<div class="form-group">
-								<input type="submit" class="btn btn-info" value="Exportar">
+							<div class="col-sm-7">
+								<form action="{% url 'consumption:exportCSV' %}" method="GET" enctype="multipart/form-data" id="uploadform">
+									{% csrf_token %}
+									<div class="form-group">
+										<input type="submit" class="btn btn-info" value="Exportar">
+									</div>
+								</form>
 							</div>
-						</form>
+						</div>
 					</div>
 				</div>
 			</div>

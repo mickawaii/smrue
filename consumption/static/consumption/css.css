@@ -17,3 +17,19 @@
     min-height: 65px;
     margin-top: 15px;
 }
+
+.add-on {
+    margin: 0 5px;
+}
+
+.year-month-range-picker-past .input-tiny {
+    width: 107px;
+}
+
+.with-border-right {
+    border-right: 1px solid #DEDEDE;
+}
+
+.with-border-left {
+    border-left: 1px solid #DEDEDE;
+}
